@@ -112,7 +112,7 @@ function Navigation() {
               </button>
             </li>
           </ul>
-          <button className="nav-toggle" onClick={() => setMenuOpen(true)}>
+          <button className="nav-toggle" onClick={() => setMenuOpen(!menuOpen)}>
             <span></span>
             <span></span>
             <span></span>
