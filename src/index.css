@@ -57,6 +57,9 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 body {
@@ -66,6 +69,8 @@ body {
   color: var(--color-dark);
   background-color: var(--color-primary);
   overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -866,6 +871,41 @@ html[lang="ar"] .hero-title {
   letter-spacing: 0.1em;
 }
 
+@media (max-width: 767px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .about-image::before {
+    display: none;
+  }
+
+  .timeline-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .timeline-year {
+    font-size: 24px;
+    min-width: auto;
+  }
+
+  .about-stats {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stat-item {
+    padding: 16px;
+  }
+
+  .stat-number {
+    font-size: 36px;
+  }
+}
+
 /* Services Section */
 .services {
   background: var(--color-primary);
@@ -1110,7 +1150,8 @@ html[lang="ar"] .hero-title {
 @media (max-width: 639px) {
   .designs-grid {
     grid-template-columns: 1fr;
-    max-width: 320px;
+    width: 100%;
+    max-width: 100%;
   }
 }
 

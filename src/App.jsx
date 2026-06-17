@@ -1033,10 +1033,11 @@ function BeforeAfter() {
   const { t, language } = useLanguage();
 
   const transformations = [
-    { before: '/beforeafter/before1.jpg', after: '/beforeafter/after1.jpg' },
-    { before: '/beforeafter/before2.jpg', after: '/beforeafter/after2.jpg' },
-    { before: '/beforeafter/before3.jpg', after: '/beforeafter/after3.jpg' },
-    { before: '/beforeafter/before4.jpg', after: '/beforeafter/after4.jpg' },
+    { before: '/picture/before 1.jpeg', after: '/picture/after 1.jpeg' },
+    { before: '/picture/before 2.jpeg', after: '/picture/after 2.jpeg' },
+    { before: '/picture/before 3.jpeg', after: '/picture/after 3.jpeg' },
+    { before: '/picture/before 4.jpeg', after: '/picture/after 4.jpeg' },
+    { before: '/picture/before 5.jpeg', after: '/picture/after 5.jpeg' },
   ];
 
   return (
