@@ -1466,7 +1466,7 @@ function Instagram() {
         </motion.div>
 
         <div style={{ textAlign: 'center' }}>
-          <a href="https://instagram.com/alyaaevents" target="_blank" rel="noopener noreferrer" className="instagram-link">
+          <a href="https://www.instagram.com/alya_eventss?igsh=MTNrbG4yZGpqb2g4cg==" target="_blank" rel="noopener noreferrer" className="instagram-link">
             {t('instagram.followLink')}
           </a>
         </div>
