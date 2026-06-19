@@ -273,14 +273,16 @@ html[lang="ar"] .section-label {
   right: 0;
   z-index: 1000;
   padding: 20px 0;
-  transition: var(--transition);
+  transition: all 0.4s ease;
+  background: transparent;
 }
 
 .nav.scrolled {
-  background: var(--color-glass);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-soft);
-  padding: 16px 0;
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  padding: 12px 0;
 }
 
 .nav-container {
@@ -294,10 +296,11 @@ html[lang="ar"] .section-label {
 
 .nav-logo {
   font-family: var(--font-heading);
-  font-size: 28px;
-  font-weight: 500;
+  font-size: 26px;
+  font-weight: 600;
   color: var(--color-white);
-  transition: var(--transition);
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
 }
 
 .nav.scrolled .nav-logo {
@@ -307,17 +310,19 @@ html[lang="ar"] .section-label {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 32px;
   list-style: none;
 }
 
 .nav-link {
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: 0.05em;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
   color: var(--color-white);
-  transition: var(--transition);
+  transition: all 0.3s ease;
   position: relative;
+  padding: 8px 0;
 }
 
 .nav.scrolled .nav-link {
@@ -327,21 +332,53 @@ html[lang="ar"] .section-label {
 .nav-link::after {
   content: '';
   position: absolute;
-  bottom: -4px;
-  left: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 0;
-  height: 1px;
-  background: currentColor;
-  transition: var(--transition);
+  height: 2px;
+  background: #d4af37;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #d4af37;
 }
 
 .nav-link:hover::after {
   width: 100%;
 }
 
+.nav.scrolled .nav-link:hover {
+  color: #d4af37;
+}
+
 .nav-cta {
-  padding: 12px 24px;
-  font-size: 13px;
+  padding: 10px 24px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.nav-cta:hover {
+  background: #d4af37;
+  border-color: #d4af37;
+  color: #fff;
+}
+
+.nav.scrolled .nav-cta {
+  border: 1px solid var(--color-dark);
+  background: transparent;
+}
+
+.nav.scrolled .nav-cta:hover {
+  background: #d4af37;
+  border-color: #d4af37;
+  color: #fff;
 }
 
 .nav-toggle {
@@ -433,6 +470,7 @@ html[lang="ar"] .section-label {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background: #000;
 }
 
 .hero-video {
@@ -442,24 +480,12 @@ html[lang="ar"] .section-label {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.hero-fallback {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, var(--color-dark) 0%, #8B6B4F 100%);
+  z-index: 0;
+  background: transparent;
 }
 
 .hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--color-overlay);
+  display: none;
 }
 
 .hero-content {
@@ -547,6 +573,9 @@ html[lang="ar"] .hero-title {
 @media (max-width: 1024px) {
   .hero {
     min-height: 600px;
+  }
+  .hero-video {
+    object-position: center center;
   }
 }
 
@@ -913,8 +942,10 @@ html[lang="ar"] .hero-title {
 
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--grid-gap);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 @media (max-width: 1023px) {
@@ -1759,6 +1790,185 @@ html[lang="ar"] .hero-title {
   }
 }
 
+/* Testimonials */
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.testimonial-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.testimonial-rating {
+  margin-bottom: 16px;
+}
+
+.testimonial-rating .star {
+  font-size: 1.5rem;
+  color: #ddd;
+  margin: 0 2px;
+}
+
+.testimonial-rating .star.filled {
+  color: #f5c518;
+}
+
+.testimonial-text {
+  font-size: 1.1rem;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+.testimonial-name {
+  font-weight: 600;
+  color: var(--color-primary);
+  font-size: 1rem;
+}
+
+.testimonial-cta {
+  text-align: center;
+  margin: 32px 0;
+}
+
+.testimonial-form-container {
+  max-width: 500px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.testimonial-form h3 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--color-primary);
+  font-size: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e5e5e5;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.rating-select {
+  display: flex;
+  gap: 8px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.star-btn:hover {
+  transform: scale(1.1);
+}
+
+.star-btn.active {
+  color: #f5c518;
+}
+
+.form-error {
+  color: #e53935;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.testimonial-success {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.success-icon {
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  border-radius: 50%;
+  background: #4caf50;
+  color: #fff;
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+.testimonial-success p {
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.stats-fallback {
+  margin-top: 40px;
+}
+
+@media (max-width: 1023px) {
+  .testimonials-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .testimonial-card {
+    padding: 24px 20px;
+  }
+
+  .testimonial-form-container {
+    padding: 24px 20px;
+    margin: 0 16px;
+  }
+}
+
 /* Before & After */
 .before-after {
   background: var(--color-secondary);
@@ -2398,20 +2608,21 @@ html[lang="en"] body {
 
 /* Language Toggle Button */
 .lang-toggle {
-  padding: 8px 16px;
-  font-size: 12px;
+  padding: 6px 14px;
+  font-size: 11px;
   font-weight: 600;
-  background: var(--color-accent);
+  background: rgba(255, 255, 255, 0.15);
   color: var(--color-white);
   border-radius: 20px;
   cursor: pointer;
-  transition: var(--transition);
-  border: none;
-  min-width: 50px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  min-width: 45px;
 }
 
 .lang-toggle:hover {
-  background: var(--color-dark);
+  background: #d4af37;
+  border-color: #d4af37;
   transform: scale(1.05);
 }
 
@@ -2421,6 +2632,38 @@ html[lang="en"] body {
 }
 
 .nav.scrolled .lang-toggle:hover {
+  background: var(--color-accent);
+  color: var(--color-white);
+}
+
+.admin-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.admin-link:hover {
+  background: #d4af37;
+  border-color: #d4af37;
+  color: var(--color-white);
+  transform: scale(1.1);
+}
+
+.nav.scrolled .admin-link {
+  color: var(--color-dark);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.nav.scrolled .admin-link:hover {
   background: var(--color-accent);
   color: var(--color-white);
 }
