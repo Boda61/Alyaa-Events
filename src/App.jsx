@@ -140,12 +140,16 @@ function Navigation() {
         </div>
       </nav>
 
+      {/* Overlay */}
+      <div className={`mobile-menu-overlay ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(false)}></div>
+
       <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
         <button className="mobile-menu-close" onClick={() => setMenuOpen(false)}>×</button>
         <a href="#home" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('home'); setMenuOpen(false); }}>{t('nav.home')}</a>
         <a href="#portfolio" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('portfolio'); setMenuOpen(false); }}>{t('nav.portfolio')}</a>
         <a href="#about" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('about'); setMenuOpen(false); }}>{t('nav.about')}</a>
         <a href="#services" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('services'); setMenuOpen(false); }}>{t('nav.services')}</a>
+        <a href="#testimonials" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('testimonials'); setMenuOpen(false); }}>{language === 'en' ? 'Reviews' : 'آراء'}</a>
         <a href="#contact" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('contact'); setMenuOpen(false); }}>{t('nav.contact')}</a>
         <button className="btn btn-primary" onClick={() => { scrollTo('planner'); setMenuOpen(false); }}>{t('nav.planEvent')}</button>
         <a
@@ -163,10 +167,11 @@ function Navigation() {
           </svg>
           <span className="admin-link-mobile-text">لوحة التحكم</span>
         </a>
-        <button className="lang-toggle-mobile" onClick={() => { toggleLanguage(); setMenuOpen(false); }}>
-          {language === 'en' ? 'العربية' : 'English'}
-        </button>
       </div>
+      {/* Language toggle outside mobile menu - fixed position on mobile */}
+      <button className="lang-toggle-fixed" onClick={() => { toggleLanguage(); setMenuOpen(false); }}>
+        {language === 'en' ? 'عربي' : 'EN'}
+      </button>
     </>
   );
 }
@@ -290,31 +295,17 @@ function Gallery() {
   return (
     <section id="portfolio" className="section gallery">
       <div className="container">
-        <motion.div
-          className="section-header"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-        >
+        <div className="section-header">
           <span className="section-label">{t('portfolio.label')}</span>
           <h2 className="section-title">{t('portfolio.title')}</h2>
           <p className="section-subtitle">{t('portfolio.subtitle')}</p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="gallery-grid"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-        >
+        <div className="gallery-grid">
           {images.map((image, index) => (
-            <motion.div
+            <div
               key={image.id || index}
               className="gallery-item"
-              variants={fadeInUp}
-              whileHover={{ scale: 1.02 }}
               onClick={() => openLightbox(image)}
             >
               <img src={image.src} alt={language === 'ar' ? image.titleAr : image.title} loading="lazy" />
@@ -327,9 +318,9 @@ function Gallery() {
                   <MagnifyingGlass weight="bold" />
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
       </div>
 
       <AnimatePresence>
