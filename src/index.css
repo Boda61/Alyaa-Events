@@ -2650,6 +2650,22 @@ html[lang="en"] body {
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
+.admin-link-mobile {
+  width: auto;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  margin-top: 8px;
+  gap: 10px;
+}
+
+.admin-link-mobile-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: inherit;
+}
+
+
 .admin-link:hover {
   background: #d4af37;
   border-color: #d4af37;
