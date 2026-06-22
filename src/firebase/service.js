@@ -364,13 +364,29 @@ const defaultRentalItems = [
   { nameEn: 'Large Crystal Mirror', nameAr: 'مرايا كريستال كبيرة', price: '350', category: 'mirrors-flowers', order: 1 },
   { nameEn: 'Silver Mirror', nameAr: 'مرايا فضة ستانليس', price: '400', category: 'mirrors-flowers', order: 2 },
   { nameEn: 'Gold Mirror', nameAr: 'مرايا ذهبي بورد', price: '200', category: 'mirrors-flowers', order: 3 },
-  // مرايا بدون ورد (Mirrors without Flowers)
+  // مرايا (Mirrors without Flowers)
   { nameEn: 'Regular Mirror', nameAr: 'مرايا عادية', price: '150', category: 'mirrors', order: 0 },
   { nameEn: 'Silver Mirror Plain', nameAr: 'مرايا فضة ستانليس', price: '250', category: 'mirrors', order: 1 },
-  // كراسي (Chairs)
-  { nameEn: 'Louis Chair', nameAr: 'كرسي لويس', price: '80', category: 'chairs', order: 0 },
-  { nameEn: 'Chiavari Chair', nameAr: 'كرسي تشيافري', price: '60', category: 'chairs', order: 1 },
-  { nameEn: 'Acrylic Chair', nameAr: 'كرسي اكريلك', price: '100', category: 'chairs', order: 2 },
+  // كراسي عادية (Normal Chairs) - بالقطعة
+  { nameEn: 'Louis Chair', nameAr: 'كرسي لويس', price: '80', category: 'normalChairs', order: 0 },
+  { nameEn: 'Chiavari Chair', nameAr: 'كرسي تشيافري', price: '60', category: 'normalChairs', order: 1 },
+  { nameEn: 'Acrylic Chair', nameAr: 'كرسي اكريلك', price: '100', category: 'normalChairs', order: 2 },
+  // كراسي عادية (Normal Chairs) - بالكمية
+  { nameEn: '50 - 100 chairs', nameAr: '٥٠ - ١٠٠ كرسي', price: '4,000', category: 'normalChairs', order: 10 },
+  { nameEn: '100 - 200 chairs', nameAr: '١٠٠ - ٢٠٠ كرسي', price: '7,500', category: 'normalChairs', order: 11 },
+  { nameEn: '200 - 300 chairs', nameAr: '٢٠٠ - ٣٠٠ كرسي', price: '11,000', category: 'normalChairs', order: 12 },
+  { nameEn: '300 - 500 chairs', nameAr: '٣٠٠ - ٥٠٠ كرسي', price: '17,500', category: 'normalChairs', order: 13 },
+  { nameEn: '500+ chairs', nameAr: '٥٠٠+ كرسي', price: '25,000', category: 'normalChairs', order: 14 },
+  // كراسي كانيه (Cane Chairs) - بالقطعة
+  { nameEn: 'Cane Chair White', nameAr: 'كرسي كانيه ابيض', price: '120', category: 'caneChairs', order: 0 },
+  { nameEn: 'Cane Chair Gold', nameAr: 'كرسي كانيه ذهب', price: '150', category: 'caneChairs', order: 1 },
+  { nameEn: 'Cane Chair Silver', nameAr: 'كرسي كانيه فضة', price: '140', category: 'caneChairs', order: 2 },
+  // كراسي كانيه (Cane Chairs) - بالكمية
+  { nameEn: '50 - 100 cane chairs', nameAr: '٥٠ - ١٠٠ كرسي كانيه', price: '6,000', category: 'caneChairs', order: 10 },
+  { nameEn: '100 - 200 cane chairs', nameAr: '١٠٠ - ٢٠٠ كرسي كانيه', price: '11,000', category: 'caneChairs', order: 11 },
+  { nameEn: '200 - 300 cane chairs', nameAr: '٢٠٠ - ٣٠٠ كرسي كانيه', price: '16,000', category: 'caneChairs', order: 12 },
+  { nameEn: '300 - 500 cane chairs', nameAr: '٣٠٠ - ٥٠٠ كرسي كانيه', price: '24,000', category: 'caneChairs', order: 13 },
+  { nameEn: '500+ cane chairs', nameAr: '٥٠٠+ كرسي كانيه', price: '35,000', category: 'caneChairs', order: 14 },
 ];
 
 export const rentalItemsService = {

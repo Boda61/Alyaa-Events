@@ -38,10 +38,10 @@ const translations = {
     },
     // Timeline
     timeline: [
-      { year: '2012', text: 'Founded with a vision for luxury events' },
-      { year: '2015', text: 'Expanded to full-service decoration' },
-      { year: '2020', text: 'International recognition' },
-      { year: '2024', text: '500+ weddings completed' },
+      { year: '2023', text: 'Founded with a vision for luxury events' },
+      { year: '2024', text: 'Expanded to full-service decoration' },
+      { year: '2025', text: 'International recognition' },
+      { year: '2026', text: '500+ weddings completed' },
     ],
     // Services
     services: {
@@ -149,10 +149,10 @@ const translations = {
     },
     // Timeline
     timeline: [
-      { year: '2012', text: 'تأسيسنا برؤية للمناسبات الفاخرة' },
-      { year: '2015', text: 'التوسع لخدمات الديكور الكاملة' },
-      { year: '2020', text: 'الاعتراف الدولي' },
-      { year: '2024', text: 'أكثر من 500 فرح مكتمل' },
+      { year: '2023', text: 'تأسيسنا برؤية للمناسبات الفاخرة' },
+      { year: '2024', text: 'التوسع لخدمات الديكور الكاملة' },
+      { year: '2025', text: 'الاعتراف الدولي' },
+      { year: '2026', text: 'أكثر من 500 فرح مكتمل' },
     ],
     // Services
     services: {
@@ -198,7 +198,7 @@ const translations = {
       quickLinks: 'روابط سريعة',
       services: 'الخدمات',
       contact: 'تواصل معنا',
-      copyright: '© 2024 Alyaa Events. جميع الحقوق محفوظة.',
+      copyright: '© 2026 Alyaa Events. جميع الحقوق محفوظة.',
     },
     // Form Steps
     form: {
@@ -255,9 +255,9 @@ const translations = {
       plannerEventTypes: {
         wedding: { name: 'فرح', description: 'احتفال اليوم الكامل' },
         engagement: { name: 'خطوبة', description: 'مراسم تبادل الخواتم' },
-        henna: { name: 'ليلة الحنة', description: 'احتفال تقليدي' },
+        henna: { name: 'قرايه فاتحه', description: 'احتفال تقليدي' },
         corporate: { name: 'شركة', description: 'حدث تجاري' },
-        birthday: { name: 'عيد ميلاد', description: 'احتفال الذكرى' },
+        birthday: { name: 'كتب كتاب', description: 'احتفال الذكرى' },
         other: { name: 'أخرى', description: 'حدث مخصص' },
       },
 
@@ -295,27 +295,7 @@ const translations = {
       { number: '05', title: 'الاحتفال', description: 'استمتع بحدثك المثالي بينما نتكفل بكل عناصر الديكور.' },
     ],
 
-    testimonials: {
-      label: 'آراء العملاء',
-      title: 'ماذا يقول عملاؤنا',
-      items: [
-        {
-          quote: 'حوّلت شركة أليس إيفنتس حفل زفافنا إلى حكاية خيالية. كانت كل التفاصيل مثالية: من الترتيبات الزهرية إلى الإضاءة. ضيوفنا ما زالوا يتحدثون عنها حتى الآن!',
-          name: 'Sarah & Michael',
-          event: 'Wedding, 2024',
-        },
-        {
-          quote: 'فهم الفريق تماماً ما تصورناه لحفل الخطوبة. كانت العناية بالتفاصيل مميزة، وكل شيء تخطى توقعاتنا.',
-          name: 'Layla & Omar',
-          event: 'Engagement, 2024',
-        },
-        {
-          quote: 'عمل احترافي وإبداعي ومذهل فعلاً. جعلوا يومنا الخاص لا يُنسى. أوصي بشدة بأليس إيفنتس لأي شخص يخطط لاحتفال.',
-          name: 'Amira & Hassan',
-          event: 'Wedding, 2023',
-        },
-      ],
-    },
+
   },
 };
 

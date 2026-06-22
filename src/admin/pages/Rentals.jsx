@@ -6,11 +6,12 @@ import {
   Trash,
   X,
 } from 'phosphor-react';
-import { rentalItemsService } from '../../firebase/service';
+import { rentalItemsService, decorationService } from '../../firebase/service';
 
 const Rentals = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [rentals, setRentals] = useState([]);
+  const [decorations, setDecorations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(searchParams.get('action') === 'add');
   const [editingId, setEditingId] = useState(null);
@@ -22,6 +23,9 @@ const Rentals = () => {
     nameEn: '',
     nameAr: '',
     price: '',
+    originalPrice: '',
+    discountedPrice: '',
+    hasDiscount: false,
     category: 'mirrors-flowers',
     order: 0
   });
@@ -30,8 +34,12 @@ const Rentals = () => {
     const fetchRentals = async () => {
       try {
         // Try to get existing data, or create defaults if empty
-        const data = await rentalItemsService.getAllWithDefaults();
-        setRentals(data);
+        const rentalData = await rentalItemsService.getAllWithDefaults();
+        setRentals(rentalData);
+
+        // Also fetch decorations for decoration category
+        const decorationData = await decorationService.getAllWithDefaults();
+        setDecorations(decorationData);
       } catch (err) {
         console.error('Error fetching rentals:', err);
       } finally {
@@ -42,12 +50,16 @@ const Rentals = () => {
   }, []);
 
   const openAddModal = () => {
+    const itemCount = activeCategory === 'decorations' ? decorations.length : rentals.length;
     setFormData({
       nameEn: '',
       nameAr: '',
       price: '',
+      originalPrice: '',
+      discountedPrice: '',
+      hasDiscount: false,
       category: activeCategory,
-      order: rentals.length
+      order: itemCount
     });
     setEditingId(null);
     setShowModal(true);
@@ -60,6 +72,9 @@ const Rentals = () => {
       nameEn: item.nameEn || '',
       nameAr: item.nameAr || '',
       price: item.price || '',
+      originalPrice: item.originalPrice || '',
+      discountedPrice: item.discountedPrice || '',
+      hasDiscount: item.hasDiscount || false,
       category: item.category || 'mirrors-flowers',
       order: item.order || 0
     });
@@ -83,24 +98,43 @@ const Rentals = () => {
       setSaving(false);
       return;
     }
+    if (formData.hasDiscount && (!formData.originalPrice || !formData.discountedPrice)) {
+      setError('يرجى إدخال السعر الأصلي والسعر المخفض');
+      setSaving(false);
+      return;
+    }
 
     try {
       const itemData = {
         nameEn: formData.nameEn,
         nameAr: formData.nameAr,
         price: formData.price,
+        originalPrice: formData.hasDiscount ? formData.originalPrice : '',
+        discountedPrice: formData.hasDiscount ? formData.discountedPrice : '',
+        hasDiscount: formData.hasDiscount || false,
         category: formData.category,
         order: parseInt(formData.order) || 0
       };
 
-      if (editingId) {
-        await rentalItemsService.update(editingId, itemData);
+      // Use decorationService for decorations, rentalItemsService for other items
+      if (activeCategory === 'decorations') {
+        if (editingId) {
+          await decorationService.update(editingId, itemData);
+        } else {
+          await decorationService.add(itemData);
+        }
+        const data = await decorationService.getAll();
+        setDecorations(data);
       } else {
-        await rentalItemsService.add(itemData);
+        if (editingId) {
+          await rentalItemsService.update(editingId, itemData);
+        } else {
+          await rentalItemsService.add(itemData);
+        }
+        const data = await rentalItemsService.getAll();
+        setRentals(data);
       }
 
-      const data = await rentalItemsService.getAll();
-      setRentals(data);
       setShowModal(false);
       setSearchParams({});
     } catch (err) {
@@ -116,9 +150,15 @@ const Rentals = () => {
 
     try {
       setLoading(true);
-      await rentalItemsService.delete(id);
-      const data = await rentalItemsService.getAll();
-      setRentals(data);
+      if (activeCategory === 'decorations') {
+        await decorationService.delete(id);
+        const data = await decorationService.getAll();
+        setDecorations(data);
+      } else {
+        await rentalItemsService.delete(id);
+        const data = await rentalItemsService.getAll();
+        setRentals(data);
+      }
     } catch (err) {
       console.error('Error deleting:', err);
     } finally {
@@ -126,12 +166,16 @@ const Rentals = () => {
     }
   };
 
-  const filteredRentals = rentals.filter(r => r.category === activeCategory);
+  const filteredRentals = activeCategory === 'decorations'
+    ? decorations
+    : rentals.filter(r => r.category === activeCategory);
 
   const categories = [
+    { id: 'decorations', name: 'تصاميم الديكور' },
     { id: 'mirrors-flowers', name: 'مرايا بورد' },
-    { id: 'mirrors', name: 'مرايا بدون ورد' },
-    { id: 'chairs', name: 'كراسي' }
+    { id: 'mirrors', name: 'مرايا' },
+    { id: 'normalChairs', name: 'كراسي عادية' },
+    { id: 'caneChairs', name: 'كرسي كانيه' }
   ];
 
   if (loading) {
@@ -181,7 +225,15 @@ const Rentals = () => {
               <div className="rental-info">
                 <h3>{item.nameAr || item.nameEn}</h3>
                 {item.nameEn && <p className="name-en">{item.nameEn}</p>}
-                {item.price && <span className="rental-price">{item.price} جم</span>}
+                {item.hasDiscount && item.originalPrice ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                    <span className="rental-price" style={{ textDecoration: 'line-through', color: '#c62828', fontSize: '14px' }}>{item.originalPrice} جم</span>
+                    <span className="rental-price">{item.discountedPrice} جم</span>
+                    <span style={{ fontSize: '10px', background: '#c62828', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>تخفيض</span>
+                  </div>
+                ) : (
+                  item.price && <span className="rental-price">{item.price} جم</span>
+                )}
               </div>
               <div className="rental-actions">
                 <button className="btn-edit" onClick={() => openEditModal(item)}>
@@ -251,18 +303,54 @@ const Rentals = () => {
                 </div>
               </div>
 
-              <div className="form-group">
-                <label>الفئة</label>
-                <select
-                  value={formData.category}
-                  onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                  style={{ width: '100%', padding: '12px', border: '2px solid #ddd', borderRadius: '8px', fontSize: '14px' }}
-                >
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
+              <div className="form-group" style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.hasDiscount}
+                    onChange={e => setFormData(prev => ({ ...prev, hasDiscount: e.target.checked }))}
+                  />
+                  يوجد تخفيض
+                </label>
               </div>
+
+              {formData.hasDiscount && (
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>السعر الأصلي (قبل التخفيض)</label>
+                    <input
+                      type="text"
+                      value={formData.originalPrice}
+                      onChange={e => setFormData(prev => ({ ...prev, originalPrice: e.target.value }))}
+                      placeholder="150"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>السعر بعد التخفيض</label>
+                    <input
+                      type="text"
+                      value={formData.discountedPrice}
+                      onChange={e => setFormData(prev => ({ ...prev, discountedPrice: e.target.value }))}
+                      placeholder="100"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {activeCategory !== 'decorations' && (
+                <div className="form-group">
+                  <label>الفئة</label>
+                  <select
+                    value={formData.category}
+                    onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                    style={{ width: '100%', padding: '12px', border: '2px solid #ddd', borderRadius: '8px', fontSize: '14px' }}
+                  >
+                    {categories.filter(cat => cat.id !== 'decorations').map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
@@ -283,7 +371,7 @@ const Rentals = () => {
         .page-header h1 { font-size: 28px; color: #333; margin: 0; }
         .page-header p { color: #666; margin: 4px 0 0; }
         .category-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-        .category-tab { padding: 10px 20px; background: #F5F5F5; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .category-tab { padding: 10px 16px; background: #F5F5F5; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; white-space: nowrap; }
         .category-tab.active { background: #5B3E2B; color: white; }
         .rentals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .rental-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px; }

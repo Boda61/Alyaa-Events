@@ -390,7 +390,7 @@ function About() {
 
             <div className="about-stats">
               <div className="stat-item">
-                <div className="stat-number"><Counter end={12} /> {t('about.years')}</div>
+                <div className="stat-number"><Counter end={4} /> {t('about.years')}</div>
                 <div className="stat-label">{t('about.experience')}</div>
               </div>
               <div className="stat-item">
@@ -500,6 +500,8 @@ function Pricing() {
   const { language } = useLanguage();
   const [decorations, setDecorations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDesign, setSelectedDesign] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchDecorations = async () => {
@@ -526,6 +528,52 @@ function Pricing() {
     { name: 'Design 7', price: 42000, imageUrl: '' },
     { name: 'Design 8', price: 38000, imageUrl: '' }
   ];
+
+  const openModal = (design) => {
+    setSelectedDesign(design);
+    setShowModal(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedDesign(null);
+    document.body.style.overflow = 'auto';
+  };
+
+  const handleBookNow = () => {
+    window.location.href = '/admin';
+  };
+
+  const handleWhatsApp = () => {
+    const message = language === 'en'
+      ? `Hi, I'm interested in booking ${selectedDesign?.name || 'this design'}. Can you provide more details?`
+      : `مرحبا، أنا مهتم بحجز ${selectedDesign?.name || 'هذا التصميم'}. هل يمكنكم تقديم المزيد من التفاصيل؟`;
+    const phone = '201000000000';
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  // Design details for modal (sample data - in production this would come from Firebase)
+  const designDetails = {
+    seatingCapacity: '200-300ضيف',
+    flowerType: language === 'en' ? 'Fresh Roses & Orchids' : 'ورود طازجة واوركيد',
+    lightingSetup: language === 'en' ? 'Professional LED & Crystal Lights' : 'إضاءة ليد كريستال إحترافية',
+    colorTheme: language === 'en' ? 'Gold & Ivory Elegance' : 'ذهبي وعاجي فاخر',
+    stageSize: '4m x 3m',
+    setupDuration: language === 'en' ? '6-8 hours' : '٦-٨ ساعات',
+    addOns: [
+      { name: language === 'en' ? 'Crystal Chandelier' : 'شنريستال فاخر', price: 5000 },
+      { name: language === 'en' ? 'Floor LED Panels' : 'ارضيات ليد', price: 3500 },
+      { name: language === 'en' ? 'Floral Arch' : 'قوس ورد', price: 4500 },
+      { name: language === 'en' ? ' Premium Entrance' : 'مدخل فاخر', price: 6000 }
+    ],
+    breakdown: [
+      { name: language === 'en' ? 'Decoration Setup' : ' setup الديكور', price: selectedDesign?.price || 35000 },
+      { name: language === 'en' ? 'Flowers & Arrangements' : 'الورود والترتيبات', price: 8000 },
+      { name: language === 'en' ? 'Lighting & Effects' : 'الإضاءة والمؤثرات', price: 5000 },
+      { name: language === 'en' ? 'Labor & Setup' : 'التركيب والعمالة', price: 3000 }
+    ]
+  };
 
   return (
     <section id="pricing" className="section pricing">
@@ -554,7 +602,7 @@ function Pricing() {
               key={index}
               className="design-card"
               variants={fadeInUp}
-              whileHover={{ y: -8 }}
+              whileHover={{ scale: 1.03 }}
             >
               <div className="design-image">
                 <img src={item.imageUrl || item.img || `/picture/design ${index + 1}.jpeg`} alt={item.name || `Design ${index + 1}`} />
@@ -563,10 +611,111 @@ function Pricing() {
                 <span className="design-price">
                   {language === 'en' ? `${Number(item.price).toLocaleString()} EGP` : `${Number(item.price).toLocaleString()} جنيه`}
                 </span>
+                <span className="price-label">{language === 'en' ? 'Starting Price' : 'سعر البداية'}</span>
+                <button className="view-details-btn" onClick={() => openModal(item)}>
+                  {language === 'en' ? 'View Details' : 'عرض التفاصيل'}
+                </button>
               </div>
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Modal */}
+        {showModal && selectedDesign && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeModal}
+          >
+            <motion.div
+              className="design-modal"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <button className="modal-close-btn" onClick={closeModal}>
+                <X size={24} />
+              </button>
+
+              <div className="modal-image">
+                <img src={selectedDesign.imageUrl || `/picture/design ${designs.indexOf(selectedDesign) + 1}.jpeg`} alt={selectedDesign.name} />
+              </div>
+
+              <div className="modal-content">
+                <h2 className="modal-title">{selectedDesign.name}</h2>
+
+                <div className="details-grid">
+                  <div className="detail-card">
+                    <span className="detail-label">{language === 'en' ? 'Seating Capacity' : 'السعة'}</span>
+                    <span className="detail-value">{designDetails.seatingCapacity}</span>
+                  </div>
+                  <div className="detail-card">
+                    <span className="detail-label">{language === 'en' ? 'Flower Type' : 'نوع الورود'}</span>
+                    <span className="detail-value">{designDetails.flowerType}</span>
+                  </div>
+                  <div className="detail-card">
+                    <span className="detail-label">{language === 'en' ? 'Lighting Setup' : 'الإضاءة'}</span>
+                    <span className="detail-value">{designDetails.lightingSetup}</span>
+                  </div>
+                  <div className="detail-card">
+                    <span className="detail-label">{language === 'en' ? 'Color Theme' : 'لون الديكور'}</span>
+                    <span className="detail-value">{designDetails.colorTheme}</span>
+                  </div>
+                  <div className="detail-card">
+                    <span className="detail-label">{language === 'en' ? 'Stage Size' : 'حجم الستيل'}</span>
+                    <span className="detail-value">{designDetails.stageSize}</span>
+                  </div>
+                  <div className="detail-card">
+                    <span className="detail-label">{language === 'en' ? 'Setup Duration' : 'مدة التركيب'}</span>
+                    <span className="detail-value">{designDetails.setupDuration}</span>
+                  </div>
+                </div>
+
+                <div className="add-ons-section">
+                  <h3>{language === 'en' ? 'Optional Add-ons' : 'إضافات اختيارية'}</h3>
+                  <div className="add-ons-grid">
+                    {designDetails.addOns.map((addon, idx) => (
+                      <div key={idx} className="addon-item">
+                        <span className="addon-name">{addon.price > 0 ? `+ ${addon.price.toLocaleString()} EGP` : ''}</span>
+                        <span className="addon-price">{addon.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="price-breakdown">
+                  <h3>{language === 'en' ? 'Price Breakdown' : 'تفصيل السعر'}</h3>
+                  {designDetails.breakdown.map((item, idx) => (
+                    <div key={idx} className="breakdown-item">
+                      <span>{item.name}</span>
+                      <span>{item.price.toLocaleString()} {language === 'en' ? 'EGP' : 'جنيه'}</span>
+                    </div>
+                  ))}
+                  <div className="breakdown-total">
+                    <span>{language === 'en' ? 'Total' : 'الإجمالي'}</span>
+                    <span>{(selectedDesign.price + 16000).toLocaleString()} {language === 'en' ? 'EGP' : 'جنيه'}</span>
+                  </div>
+                </div>
+
+                <div className="modal-buttons">
+                  <button className="book-now-btn" onClick={handleBookNow}>
+                    {language === 'en' ? 'Book Now' : 'احجز الآن'}
+                  </button>
+                  <button className="whatsapp-btn" onClick={handleWhatsApp}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.347-.8.955-.922 1.089-.123.135-.246.149-.609.079-.214-.04-.385-.138-.597-.265-.297-.174-.497-.304-.714-.456-.105-.086-.177-.149-.254-.227-.09-.09-.093-.135-.127-.203l-.04-.295c-.038-.124-.02-.273.1-.399.178-.193.398-.297.543-.393.232-.154.537-.198.916-.198.124 0 .247.01.357.029.11.018.262.049.404.122.141.073.27.198.31.345.03.147.01.297-.01.445l-.04.355c-.02.124.02.273.1.399.12.193.398.297.543.393.232-.154.537-.198.916-.198h.124c.124 0 .247.01.357.029.11.018.262.049.404.122.141.073.27.198.31.345.03.147.01.297-.01.445l-.04.355c-.038.124.02.273.1.399.178.193.398.297.543.393.232.154.537.198.916.198.124 0 .247.01.357.029.11.018.262.049.404.122.141.073.27.198.31.345.03.147.01.297-.01.445l-.04.355c-.038.124.02.273.1.399.12.193.348.297.543.393.195.096.416.145.697.145.124 0 .247-.01.357-.029.11-.018.262-.049.404-.122.141-.073.27-.198.31-.345.03-.147.01-.297-.01-.445l-.04-.355c-.038-.124.02-.273.1-.399a1.44 1.44 0 0 0 .543-.393c.232-.154.537-.198.916-.198h.124c.124 0 .247.01.357.029.11.018.262.049.404.122.141.073.27.198.31.345.03.147.01.297-.01.445l-.04.355c-.038.124.02.273.1.399a1.44 1.44 0 0 0 .543.393c.195.096.416.145.697.145.281 0 .562-.049.797-.194.298-.184.545-.398.773-.696l.42-.567c.149-.198.074-.372-.053-.465-.127-.093-.278-.124-.417-.218z"/>
+                      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-5.531 2.41c-.213.093-.437.133-.662.133-.271 0-.537-.082-.78-.242l-1.703-1.125c-.356-.235-.54-.648-.54-1.084 0-.437.184-.85.54-1.084l5.531-2.41c.213-.093.437-.133.662-.133.271 0 .537.082.78.242l1.703 1.125c.356.235.54.648.54 1.084 0 .437-.184.85-.54 1.084z"/>
+                    </svg>
+                    {language === 'en' ? 'WhatsApp Inquiry' : 'استفسار واتساب'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
     </section>
   );
@@ -593,9 +742,10 @@ function RentalPrices() {
   }, []);
 
   // Filter items by category
-  const mirrorsWithFlowers = rentalItems.filter(item => item.category === 'mirrors-flowers');
-  const mirrorsWithoutFlowers = rentalItems.filter(item => item.category === 'mirrors');
-  const chairs = rentalItems.filter(item => item.category === 'chairs');
+  const tributesWithFlowers = rentalItems.filter(item => item.category === 'mirrors-flowers');
+  const tributesWithoutFlowers = rentalItems.filter(item => item.category === 'mirrors');
+  const normalChairs = rentalItems.filter(item => item.category === 'normalChairs');
+  const caneChairs = rentalItems.filter(item => item.category === 'caneChairs');
 
   // Helper to get display name based on language
   const getDisplayName = (item) => {
@@ -603,39 +753,53 @@ function RentalPrices() {
     return item.nameEn || item.name || '';
   };
 
-  // Helper to map Firebase data to display format
-  const mapRentalItem = (item) => ({
-    name: getDisplayName(item),
-    price: item.price || ''
-  });
+  // Helper to map Firebase data to display format with discount logic
+  const mapRentalItem = (item) => {
+    const displayPrice = item.hasDiscount && item.discountedPrice ? item.discountedPrice : item.price;
+    return {
+      name: getDisplayName(item),
+      price: displayPrice || '',
+      originalPrice: item.hasDiscount && item.originalPrice ? item.originalPrice : null,
+      hasDiscount: item.hasDiscount || false
+    };
+  };
 
   // Default fallback data if Firebase is empty
-  const defaultMirrorsWithFlowers = [
+  const defaultTributesWithFlowers = [
     { name: language === 'en' ? 'Mirror with Gold Roses' : 'مراية ورود ذهب', price: '1,500' },
     { name: language === 'en' ? 'Mirror with White Roses' : 'مراية ورود بيض', price: '1,200' },
     { name: language === 'en' ? 'Mirror with Mix Roses' : 'مراية ورود ملونة', price: '1,800' },
     { name: language === 'en' ? 'Mirror with Red Roses' : 'مراية ورود حمرا', price: '1,600' }
   ];
 
-  const defaultMirrorsWithoutFlowers = [
+  const defaultTributesWithoutFlowers = [
     { name: language === 'en' ? 'Classic Mirror' : 'مراية كلاسيك', price: '800' },
     { name: language === 'en' ? 'Gold Frame Mirror' : 'مراية ذهب', price: '1,200' },
     { name: language === 'en' ? 'Crystal Mirror' : 'مراية كريستال', price: '1,500' },
     { name: language === 'en' ? 'Mirror with LED' : 'مراية ليد', price: '2,500' }
   ];
 
-  const defaultChairs = [
+  const defaultNormalChairs = [
     { name: language === 'en' ? '50 - 100 chairs' : '٥٠ - ١٠٠ كرسي', price: '4,000' },
     { name: language === 'en' ? '100 - 200 chairs' : '١٠٠ - ٢٠٠ كرسي', price: '7,500' },
     { name: language === 'en' ? '200 - 300 chairs' : '٢٠٠ - ٣٠٠ كرسي', price: '11,000' },
-    { name: language === 'en' ? '300 - 500 chairs' : '٣٠٠ - ��٠٠ كرسي', price: '17,500' },
+    { name: language === 'en' ? '300 - 500 chairs' : '٣٠٠ - ٥٠٠ كرسي', price: '17,500' },
     { name: language === 'en' ? '500+ chairs' : '٥٠٠+ كرسي', price: '25,000' }
   ];
 
+  const defaultCaneChairs = [
+    { name: language === 'en' ? '50 - 100 cane chairs' : '٥٠ - ١٠٠ كرسي كانيه', price: '6,000' },
+    { name: language === 'en' ? '100 - 200 cane chairs' : '١٠٠ - ٢٠٠ كرسي كانيه', price: '11,000' },
+    { name: language === 'en' ? '200 - 300 cane chairs' : '٢٠٠ - ٣٠٠ كرسي كانيه', price: '16,000' },
+    { name: language === 'en' ? '300 - 500 cane chairs' : '٣٠٠ - ٥٠٠ كرسي كانيه', price: '24,000' },
+    { name: language === 'en' ? '500+ cane chairs' : '٥٠٠+ كرسي كانيه', price: '35,000' }
+  ];
+
   // Use Firebase data or fallback, map to display format
-  const displayMirrorsWithFlowers = mirrorsWithFlowers.length > 0 ? mirrorsWithFlowers.map(mapRentalItem) : defaultMirrorsWithFlowers;
-  const displayMirrorsWithoutFlowers = mirrorsWithoutFlowers.length > 0 ? mirrorsWithoutFlowers.map(mapRentalItem) : defaultMirrorsWithoutFlowers;
-  const displayChairs = chairs.length > 0 ? chairs.map(mapRentalItem) : defaultChairs;
+  const displayTributesWithFlowers = tributesWithFlowers.length > 0 ? tributesWithFlowers.map(mapRentalItem) : defaultTributesWithFlowers;
+  const displayTributesWithoutFlowers = tributesWithoutFlowers.length > 0 ? tributesWithoutFlowers.map(mapRentalItem) : defaultTributesWithoutFlowers;
+  const displayNormalChairs = normalChairs.length > 0 ? normalChairs.map(mapRentalItem) : defaultNormalChairs;
+  const displayCaneChairs = caneChairs.length > 0 ? caneChairs.map(mapRentalItem) : defaultCaneChairs;
 
   return (
     <section id="rental" className="section rental">
@@ -662,11 +826,18 @@ function RentalPrices() {
           >
             <h3>{language === 'en' ? 'Mirrors with Flowers' : 'مرايا بورد'}</h3>
             <div className="rental-items">
-              {displayMirrorsWithFlowers.map((item, index) => (
+              {displayTributesWithFlowers.map((item, index) => (
                 <div key={index} className="rental-item">
                   <span className="item-name">{item.name}</span>
                   <span className="item-price">
-                    {language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`}
+                    {item.hasDiscount && item.originalPrice ? (
+                      <>
+                        <span className="original-price">{language === 'en' ? `${item.originalPrice} EGP` : `${item.originalPrice} جنيه`}</span>
+                        <span className="discounted-price">{language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`}</span>
+                      </>
+                    ) : (
+                      language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`
+                    )}
                   </span>
                 </div>
               ))}
@@ -680,13 +851,20 @@ function RentalPrices() {
             viewport={{ once: true }}
             variants={fadeInUp}
           >
-            <h3>{language === 'en' ? 'Mirrors without Flowers' : 'مرايا بدون ورر'}</h3>
+            <h3>{language === 'en' ? 'Tapels' : 'ترابيزات'}</h3>
             <div className="rental-items">
-              {displayMirrorsWithoutFlowers.map((item, index) => (
+              {displayTributesWithoutFlowers.map((item, index) => (
                 <div key={index} className="rental-item">
                   <span className="item-name">{item.name}</span>
                   <span className="item-price">
-                    {language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`}
+                    {item.hasDiscount && item.originalPrice ? (
+                      <>
+                        <span className="original-price">{language === 'en' ? `${item.originalPrice} EGP` : `${item.originalPrice} جنيه`}</span>
+                        <span className="discounted-price">{language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`}</span>
+                      </>
+                    ) : (
+                      language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`
+                    )}
                   </span>
                 </div>
               ))}
@@ -700,13 +878,47 @@ function RentalPrices() {
             viewport={{ once: true }}
             variants={fadeInUp}
           >
-            <h3>{language === 'en' ? 'Chairs' : 'كراسي'}</h3>
+            <h3>{language === 'en' ? ' Chairs' : 'كراسي'}</h3>
             <div className="rental-items">
-              {displayChairs.map((item, index) => (
+              {displayNormalChairs.map((item, index) => (
                 <div key={index} className="rental-item">
                   <span className="item-name">{item.name}</span>
                   <span className="item-price">
-                    {language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`}
+                    {item.hasDiscount && item.originalPrice ? (
+                      <>
+                        <span className="original-price">{language === 'en' ? `${item.originalPrice} EGP` : `${item.originalPrice} جنيه`}</span>
+                        <span className="discounted-price">{language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`}</span>
+                      </>
+                    ) : (
+                      language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="rental-category"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+          >
+            <h3>{language === 'en' ? 'Cane Chairs' : 'كراسي (مدفع)'}</h3>
+            <div className="rental-items">
+              {displayCaneChairs.map((item, index) => (
+                <div key={index} className="rental-item">
+                  <span className="item-name">{item.name}</span>
+                  <span className="item-price">
+                    {item.hasDiscount && item.originalPrice ? (
+                      <>
+                        <span className="original-price">{language === 'en' ? `${item.originalPrice} EGP` : `${item.originalPrice} جنيه`}</span>
+                        <span className="discounted-price">{language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`}</span>
+                      </>
+                    ) : (
+                      language === 'en' ? `${item.price} EGP` : `${item.price} جنيه`
+                    )}
                   </span>
                 </div>
               ))}
@@ -813,7 +1025,6 @@ function EventPlanner() {
     const message = `*New Event Inquiry - Alyaa Events*\n\n` +
       `*${eventLabel}:* ${getEventTypeName(formData.eventType)}\n` +
       `*${guestLabel}:* ${getGuestCountName(formData.guestCount)}\n` +
-      `*${styleLabel}:* ${getStyleName(formData.style)}\n` +
       `*${colorsLabel}:* ${getColorName(formData.colors)}\n` +
       `*${budgetLabel}:* ${getBudgetName(formData.budget)}\n\n` +
       `*${notesLabel}:*\n${formData.notes || noneText}` +
@@ -828,9 +1039,8 @@ function EventPlanner() {
     switch(step) {
       case 1: return formData.eventType;
       case 2: return true; // guestCount is optional
-      case 3: return formData.style;
-      case 4: return formData.colors;
-      case 5: return formData.budget;
+      case 3: return formData.colors;
+      case 4: return formData.budget;
       default: return true;
     }
   };
@@ -840,9 +1050,9 @@ function EventPlanner() {
   const eventTypesList = [
     { id: 'wedding', name: language === 'en' ? 'Wedding' : 'فرح', description: language === 'en' ? 'Full day celebration' : 'احتفال اليوم الكامل' },
     { id: 'engagement', name: language === 'en' ? 'Engagement' : 'خطوبة', description: language === 'en' ? 'Ring exchange ceremony' : 'مراسم تبادل الخواتم' },
-    { id: 'henna', name: language === 'en' ? 'Henna Night' : 'ليلة الحنة', description: language === 'en' ? 'Traditional celebration' : 'احتفال تقليدي' },
+    { id: 'henna', name: language === 'en' ? 'Henna Night' : 'قرايه فاتحه', description: language === 'en' ? 'Traditional celebration' : 'احتفال تقليدي' },
     { id: 'corporate', name: language === 'en' ? 'Corporate' : 'شركة', description: language === 'en' ? 'Business event' : 'حدث تجاري' },
-    { id: 'birthday', name: language === 'en' ? 'Birthday' : 'عيد ميلاد', description: language === 'en' ? 'Anniversary celebration' : 'احتفال الذكرى' },
+    { id: 'birthday', name: language === 'en' ? 'Birthday' : 'كتب كتاب', description: language === 'en' ? 'Anniversary celebration' : 'احتفال الذكرى' },
     { id: 'other', name: language === 'en' ? 'Other' : 'أخرى', description: language === 'en' ? 'Custom event' : 'حدث مخصص' },
   ];
 
@@ -874,11 +1084,11 @@ function EventPlanner() {
   ];
 
   const budgetRangesList = [
-    { id: '50k', name: '50,000 - 100,000 EGP', range: language === 'en' ? 'Budget-friendly' : 'اقتصادي' },
-    { id: '150k', name: '100,000 - 150,000 EGP', range: language === 'en' ? 'Mid-range' : 'متوسط' },
-    { id: '250k', name: '150,000 - 250,000 EGP', range: language === 'en' ? 'Premium' : 'متميز' },
-    { id: '500k', name: '250,000 - 500,000 EGP', range: language === 'en' ? 'Luxury' : 'فاخر' },
-    { id: 'custom', name: '500,000+ EGP', range: language === 'en' ? 'Ultra-luxury' : 'فاخر جداً' },
+    { id: '50k', name: '2500 - 8500 EGP', range: language === 'en' ? 'Budget-friendly' : 'قرايه فاتحه او خطوبه(in door)' },
+    { id: '150k', name: '15,000 - 25,000 EGP', range: language === 'en' ? 'Mid-range' : 'كتب كتاب (out door)' },
+    { id: '250k', name: '3000 - 8000 EGP', range: language === 'en' ? 'Premium' : 'كتب كتاب(in door)' },
+    { id: '500k', name: '15,000 - 30,000 EGP', range: language === 'en' ? 'Luxury' : 'خطوبه (out door)' },
+    { id: 'custom', name: '70,000 - 130,000 EGP', range: language === 'en' ? 'Ultra-luxury' : 'فرح' },
   ];
 
   return (
@@ -904,11 +1114,11 @@ function EventPlanner() {
           transition={{ duration: 0.6 }}
         >
           <div className="planner-progress">
-            {[1, 2, 3, 4, 5, 6].map((s) => (
+            {[1, 2, 3, 4, 5].map((s) => (
               <div key={s} className={`progress-step ${step === s ? 'active' : ''} ${step > s ? 'completed' : ''}`}>
                 <div className="progress-number">{step > s ? '✓' : s}</div>
                 <span className="progress-label">
-                  {s === 1 ? (language === 'en' ? 'Type' : 'النوع') : s === 2 ? (language === 'en' ? 'Guests' : 'الضيوف') : s === 3 ? (language === 'en' ? 'Style' : 'الأسلوب') : s === 4 ? (language === 'en' ? 'Colors' : 'الألوان') : s === 5 ? (language === 'en' ? 'Budget' : 'الميزانية') : (language === 'en' ? 'Details' : 'التفاصيل')}
+                  {s === 1 ? (language === 'en' ? 'Type' : 'النوع') : s === 2 ? (language === 'en' ? 'Guests' : 'الضيوف') : s === 3 ? (language === 'en' ? 'Colors' : 'الألوان') : s === 4 ? (language === 'en' ? 'Budget' : 'الميزانية') : (language === 'en' ? 'Details' : 'التفاصيل')}
                 </span>
               </div>
             ))}
@@ -973,31 +1183,6 @@ function EventPlanner() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <h3 className="step-title">{t('form.style')}</h3>
-                <p className="step-subtitle">{t('form.styleSub')}</p>
-                <div className="option-grid">
-                  {decorationStylesList.map((style) => (
-                    <div
-                      key={style.id}
-                      className={`option-card ${formData.style === style.id ? 'selected' : ''}`}
-                      onClick={() => updateFormData('style', style.id)}
-                    >
-                      <h4>{style.name}</h4>
-                      <p>{style.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {step === 4 && (
-              <motion.div
-                key="step4"
-                className="planner-step"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
                 <h3 className="step-title">{t('form.colors')}</h3>
                 <p className="step-subtitle">{t('form.colorsSub')}</p>
                 <div className="option-grid">
@@ -1019,9 +1204,9 @@ function EventPlanner() {
               </motion.div>
             )}
 
-            {step === 5 && (
+            {step === 4 && (
               <motion.div
-                key="step5"
+                key="step4"
                 className="planner-step"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1044,7 +1229,7 @@ function EventPlanner() {
               </motion.div>
             )}
 
-            {step === 6 && (
+            {step === 5 && (
               <motion.div
                 key="step6"
                 className="planner-step"
@@ -1095,7 +1280,7 @@ function EventPlanner() {
             >
               {t('form.back')}
             </button>
-            {step < 6 ? (
+            {step < 5 ? (
               <button
                 className="btn btn-primary"
                 onClick={nextStep}
@@ -1376,11 +1561,12 @@ function BeforeAfter() {
   const { t, language } = useLanguage();
 
   const transformations = [
+    { before: '/picture/before 6.jpeg', after: '/picture/after 6.jpeg' },
+    { before: '/picture/before 4.jpeg', after: '/picture/after 4.jpeg' },
     { before: '/picture/before 1.jpeg', after: '/picture/after 1.jpeg' },
     { before: '/picture/before 2.jpeg', after: '/picture/after 2.jpeg' },
-    { before: '/picture/before 3.jpeg', after: '/picture/after 3.jpeg' },
-    { before: '/picture/before 4.jpeg', after: '/picture/after 4.jpeg' },
     { before: '/picture/before 5.jpeg', after: '/picture/after 5.jpeg' },
+    { before: '/picture/before 7.jpeg', after: '/picture/after 7.jpeg' },
   ];
 
   return (
