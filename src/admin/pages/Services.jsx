@@ -10,7 +10,7 @@ import {
   Image
 } from 'phosphor-react';
 import { servicesService } from '../../firebase/service';
-import { uploadImage } from '../../firebase/service';
+import { uploadImageNoDoc } from '../../firebase/service';
 
 const Services = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,7 +29,8 @@ const Services = () => {
     price: '',
     image: '',
     order: 0,
-    icon: 'flower'
+    icon: 'flower',
+    notes: ''
   });
 
   useEffect(() => {
@@ -55,7 +56,8 @@ const Services = () => {
       price: '',
       image: '',
       order: services.length,
-      icon: 'flower'
+      icon: 'flower',
+      notes: ''
     });
     setEditingId(null);
     setShowModal(true);
@@ -71,7 +73,8 @@ const Services = () => {
       price: service.price || '',
       image: service.image || '',
       order: service.order || 0,
-      icon: service.icon || 'flower'
+      icon: service.icon || 'flower',
+      notes: service.notes || ''
     });
     setEditingId(service.id);
     setShowModal(true);
@@ -108,7 +111,8 @@ const Services = () => {
         price: formData.price,
         image: formData.image,
         order: parseInt(formData.order) || 0,
-        icon: formData.icon
+        icon: formData.icon,
+        notes: formData.notes
       };
 
       if (editingId) {
@@ -321,6 +325,7 @@ const Services = () => {
                 </div>
               </div>
 
+              
               <div className="modal-actions">
                 <button
                   type="button"

@@ -111,7 +111,6 @@ export const addDocument = async (collectionName, data) => {
 // Update a document
 export const updateDocument = async (collectionName, docId, data) => {
   try {
-    console.log(`Updating ${collectionName}/${docId}:`, data);
     const docRef = doc(db, collectionName, docId);
     await updateDoc(docRef, {
       ...data,

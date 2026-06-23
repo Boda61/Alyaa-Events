@@ -1367,6 +1367,78 @@ html[lang="ar"] .hero-title {
   text-align: center;
 }
 
+.setup-section {
+  margin-bottom: 28px;
+}
+
+.setup-section h3 {
+  font-size: 16px;
+  color: #5B3E2B;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.setup-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.setup-card {
+  padding: 16px 12px;
+  border-radius: 12px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.setup-card.active {
+  background: linear-gradient(135deg, #FDF8E8 0%, #F5EFD0 100%);
+  border: 2px solid #D4AF37;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.setup-card.inactive {
+  background: linear-gradient(135deg, #FDFCFA 0%, #F5F3EF 100%);
+  border: 1px solid rgba(183, 174, 132, 0.3);
+  opacity: 0.6;
+}
+
+.setup-icon {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.setup-label {
+  font-size: 13px;
+  color: #5B3E2B;
+  font-weight: 500;
+  display: block;
+}
+
+.setup-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  background: #D4AF37;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .setup-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .details-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

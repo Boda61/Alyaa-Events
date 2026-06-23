@@ -30,7 +30,7 @@ const translations = {
     about: {
       label: 'About Us',
       title: 'The Art of Elegant Celebrations',
-      text: 'Founded in 2012, Alyaa Events has been transforming ordinary venues into extraordinary celebrations. Our passion for perfection and eye for detail have made us one of the most sought-after wedding and event decoration companies in the region.',
+      text: 'Founded in 2023, Alyaa Events has been transforming ordinary venues into extraordinary celebrations. Our passion for perfection and eye for detail have made us one of the most sought-after wedding and event decoration companies in the region.',
       years: 'years',
       events: 'Events',
       clients: 'Clients',

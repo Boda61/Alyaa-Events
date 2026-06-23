@@ -24,8 +24,16 @@ const DecorationPrices = () => {
     name: '',
     price: '',
     imageUrl: '',
-    order: 0
+    order: 0,
+    setupType: ''
   });
+
+  const setupTypeOptions = [
+    { value: 'بدون كنبة', label: 'بدون كنبة' },
+    { value: 'ب كنبة', label: 'ب كنبة' },
+    { value: 'ب كراسي', label: 'ب كراسي' },
+    { value: 'بدون كراسي', label: 'بدون كراسي' }
+  ];
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -49,7 +57,8 @@ const DecorationPrices = () => {
       name: '',
       price: '',
       imageUrl: '',
-      order: decorations.length
+      order: decorations.length,
+      setupType: ''
     });
     setSelectedImage(null);
     setPreviewUrl('');
@@ -64,7 +73,8 @@ const DecorationPrices = () => {
       name: item.name || '',
       price: item.price || '',
       imageUrl: item.imageUrl || '',
-      order: item.order || 0
+      order: item.order || 0,
+      setupType: item.setupType || ''
     });
     setSelectedImage(null);
     setPreviewUrl(item.imageUrl || '');
@@ -103,16 +113,13 @@ const DecorationPrices = () => {
         name: formData.name,
         price: parseInt(formData.price) || 0,
         imageUrl: '', // Image upload disabled - needs Firebase Storage upgrade
-        order: parseInt(formData.order) || 0
+        order: parseInt(formData.order) || 0,
+        setupType: formData.setupType || ''
       };
 
-      console.log('Saving itemData (no image):', itemData);
-
       if (editingId) {
-        console.log('Updating decoration:', editingId, itemData);
         await decorationService.update(editingId, itemData);
       } else {
-        console.log('Adding new decoration:', itemData);
         await decorationService.add(itemData);
       }
 
@@ -281,6 +288,20 @@ const DecorationPrices = () => {
                   onChange={e => setFormData(prev => ({ ...prev, order: e.target.value }))}
                   placeholder="0"
                 />
+              </div>
+
+              <div className="form-group">
+                <label>تجهيز المكان</label>
+                <select
+                  value={formData.setupType}
+                  onChange={e => setFormData(prev => ({ ...prev, setupType: e.target.value }))}
+                  style={{ width: '100%', padding: '12px', border: '2px solid #ddd', borderRadius: '8px', fontSize: '14px' }}
+                >
+                  <option value="">اختر تجهيز المكان</option>
+                  {setupTypeOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="modal-actions">

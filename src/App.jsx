@@ -471,7 +471,7 @@ function Services() {
               </div>
               <h3>{language === 'ar' ? service.nameAr : service.nameEn}</h3>
               <p>{language === 'ar' ? service.descriptionAr : service.descriptionEn}</p>
-            </motion.div>
+                          </motion.div>
           )) : defaultServicesList.map((service, index) => (
             <motion.div
               key={index}
@@ -541,32 +541,11 @@ function Pricing() {
     document.body.style.overflow = 'auto';
   };
 
-  const handleBookNow = () => {
-    window.location.href = '/admin';
-  };
-
-  const handleWhatsApp = () => {
-    const message = language === 'en'
-      ? `Hi, I'm interested in booking ${selectedDesign?.name || 'this design'}. Can you provide more details?`
-      : `مرحبا، أنا مهتم بحجز ${selectedDesign?.name || 'هذا التصميم'}. هل يمكنكم تقديم المزيد من التفاصيل؟`;
-    const phone = '201000000000';
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-  };
-
   // Design details for modal (sample data - in production this would come from Firebase)
   const designDetails = {
-    seatingCapacity: '200-300ضيف',
     flowerType: language === 'en' ? 'Fresh Roses & Orchids' : 'ورود طازجة واوركيد',
-    lightingSetup: language === 'en' ? 'Professional LED & Crystal Lights' : 'إضاءة ليد كريستال إحترافية',
-    colorTheme: language === 'en' ? 'Gold & Ivory Elegance' : 'ذهبي وعاجي فاخر',
     stageSize: '4m x 3m',
     setupDuration: language === 'en' ? '6-8 hours' : '٦-٨ ساعات',
-    addOns: [
-      { name: language === 'en' ? 'Crystal Chandelier' : 'شنريستال فاخر', price: 5000 },
-      { name: language === 'en' ? 'Floor LED Panels' : 'ارضيات ليد', price: 3500 },
-      { name: language === 'en' ? 'Floral Arch' : 'قوس ورد', price: 4500 },
-      { name: language === 'en' ? ' Premium Entrance' : 'مدخل فاخر', price: 6000 }
-    ],
     breakdown: [
       { name: language === 'en' ? 'Decoration Setup' : ' setup الديكور', price: selectedDesign?.price || 35000 },
       { name: language === 'en' ? 'Flowers & Arrangements' : 'الورود والترتيبات', price: 8000 },
@@ -647,22 +626,33 @@ function Pricing() {
               <div className="modal-content">
                 <h2 className="modal-title">{selectedDesign.name}</h2>
 
-                <div className="details-grid">
-                  <div className="detail-card">
-                    <span className="detail-label">{language === 'en' ? 'Seating Capacity' : 'السعة'}</span>
-                    <span className="detail-value">{designDetails.seatingCapacity}</span>
+                <div className="setup-section">
+                  <h3>{language === 'en' ? 'تجهيز المكان' : 'تجهيز المكان'}</h3>
+                  <div className="setup-grid">
+                    {[
+                      { id: 'بدون كنبة', icon: '🛋️', label: 'بدون كنبة' },
+                      { id: 'ب كنبة', icon: '🛋️✨', label: 'ب كنبة' },
+                      { id: 'ب كراسي', icon: '🪑', label: 'ب كراسي' },
+                      { id: 'بدون كراسي', icon: '🚫🪑', label: 'بدون كراسي' }
+                    ].map((setup) => (
+                      <div
+                        key={setup.id}
+                        className={`setup-card ${selectedDesign.setupType === setup.id ? 'active' : 'inactive'}`}
+                      >
+                        <span className="setup-icon">{setup.icon}</span>
+                        <span className="setup-label">{setup.label}</span>
+                        {selectedDesign.setupType === setup.id && (
+                          <span className="setup-check">✓</span>
+                        )}
+                      </div>
+                    ))}
                   </div>
+                </div>
+
+                <div className="details-grid">
                   <div className="detail-card">
                     <span className="detail-label">{language === 'en' ? 'Flower Type' : 'نوع الورود'}</span>
                     <span className="detail-value">{designDetails.flowerType}</span>
-                  </div>
-                  <div className="detail-card">
-                    <span className="detail-label">{language === 'en' ? 'Lighting Setup' : 'الإضاءة'}</span>
-                    <span className="detail-value">{designDetails.lightingSetup}</span>
-                  </div>
-                  <div className="detail-card">
-                    <span className="detail-label">{language === 'en' ? 'Color Theme' : 'لون الديكور'}</span>
-                    <span className="detail-value">{designDetails.colorTheme}</span>
                   </div>
                   <div className="detail-card">
                     <span className="detail-label">{language === 'en' ? 'Stage Size' : 'حجم الستيل'}</span>
@@ -672,45 +662,6 @@ function Pricing() {
                     <span className="detail-label">{language === 'en' ? 'Setup Duration' : 'مدة التركيب'}</span>
                     <span className="detail-value">{designDetails.setupDuration}</span>
                   </div>
-                </div>
-
-                <div className="add-ons-section">
-                  <h3>{language === 'en' ? 'Optional Add-ons' : 'إضافات اختيارية'}</h3>
-                  <div className="add-ons-grid">
-                    {designDetails.addOns.map((addon, idx) => (
-                      <div key={idx} className="addon-item">
-                        <span className="addon-name">{addon.price > 0 ? `+ ${addon.price.toLocaleString()} EGP` : ''}</span>
-                        <span className="addon-price">{addon.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="price-breakdown">
-                  <h3>{language === 'en' ? 'Price Breakdown' : 'تفصيل السعر'}</h3>
-                  {designDetails.breakdown.map((item, idx) => (
-                    <div key={idx} className="breakdown-item">
-                      <span>{item.name}</span>
-                      <span>{item.price.toLocaleString()} {language === 'en' ? 'EGP' : 'جنيه'}</span>
-                    </div>
-                  ))}
-                  <div className="breakdown-total">
-                    <span>{language === 'en' ? 'Total' : 'الإجمالي'}</span>
-                    <span>{(selectedDesign.price + 16000).toLocaleString()} {language === 'en' ? 'EGP' : 'جنيه'}</span>
-                  </div>
-                </div>
-
-                <div className="modal-buttons">
-                  <button className="book-now-btn" onClick={handleBookNow}>
-                    {language === 'en' ? 'Book Now' : 'احجز الآن'}
-                  </button>
-                  <button className="whatsapp-btn" onClick={handleWhatsApp}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.347-.8.955-.922 1.089-.123.135-.246.149-.609.079-.214-.04-.385-.138-.597-.265-.297-.174-.497-.304-.714-.456-.105-.086-.177-.149-.254-.227-.09-.09-.093-.135-.127-.203l-.04-.295c-.038-.124-.02-.273.1-.399.178-.193.398-.297.543-.393.232-.154.537-.198.916-.198.124 0 .247.01.357.029.11.018.262.049.404.122.141.073.27.198.31.345.03.147.01.297-.01.445l-.04.355c-.02.124.02.273.1.399.12.193.398.297.543.393.232-.154.537-.198.916-.198h.124c.124 0 .247.01.357.029.11.018.262.049.404.122.141.073.27.198.31.345.03.147.01.297-.01.445l-.04.355c-.038.124.02.273.1.399.178.193.398.297.543.393.232.154.537.198.916.198.124 0 .247.01.357.029.11.018.262.049.404.122.141.073.27.198.31.345.03.147.01.297-.01.445l-.04.355c-.038.124.02.273.1.399.12.193.348.297.543.393.195.096.416.145.697.145.124 0 .247-.01.357-.029.11-.018.262-.049.404-.122.141-.073.27-.198.31-.345.03-.147.01-.297-.01-.445l-.04-.355c-.038-.124.02-.273.1-.399a1.44 1.44 0 0 0 .543-.393c.232-.154.537-.198.916-.198h.124c.124 0 .247.01.357.029.11.018.262.049.404.122.141.073.27.198.31.345.03.147.01.297-.01.445l-.04.355c-.038.124.02.273.1.399a1.44 1.44 0 0 0 .543.393c.195.096.416.145.697.145.281 0 .562-.049.797-.194.298-.184.545-.398.773-.696l.42-.567c.149-.198.074-.372-.053-.465-.127-.093-.278-.124-.417-.218z"/>
-                      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-5.531 2.41c-.213.093-.437.133-.662.133-.271 0-.537-.082-.78-.242l-1.703-1.125c-.356-.235-.54-.648-.54-1.084 0-.437.184-.85.54-1.084l5.531-2.41c.213-.093.437-.133.662-.133.271 0 .537.082.78.242l1.703 1.125c.356.235.54.648.54 1.084 0 .437-.184.85-.54 1.084z"/>
-                    </svg>
-                    {language === 'en' ? 'WhatsApp Inquiry' : 'استفسار واتساب'}
-                  </button>
                 </div>
               </div>
             </motion.div>
@@ -941,14 +892,18 @@ function EventPlanner() {
     style: '',
     colors: '',
     budget: '',
-    notes: ''
+    budgetText: '',
+    notes: '',
+    venueType: '',
+    venueLocation: '',
+    venueNotes: ''
   });
 
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const nextStep = () => setStep(prev => Math.min(prev + 1, 6));
+  const nextStep = () => setStep(prev => Math.min(prev + 1, 5));
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
   const handleImageUpload = (e) => {
@@ -998,37 +953,33 @@ function EventPlanner() {
   };
 
   const generateWhatsAppMessage = async () => {
-    // If there are images, upload them first
-    let imageLinks = '';
-    if (formDataImages.length > 0) {
-      setUploadingImages(true);
-      try {
-        const uploadPromises = formDataImages.map(img => uploadImageToLitterbox(img.file));
-        const urls = await Promise.all(uploadPromises);
-        imageLinks = '\n*الصور المرفقة:*\n' + urls.map(url => `📷 ${url}`).join('\n');
-      } catch (err) {
-        console.error('Error uploading images:', err);
-        imageLinks = '\n*الصور:* سيتم إرسالها عبر الإيميل';
-      } finally {
-        setUploadingImages(false);
-      }
+    let message = `✨ New Event Inquiry - Alyaa Events\n\n`;
+
+    // Event details
+    if (formData.eventType) {
+      message += `نوع الفعالية: ${getEventTypeName(formData.eventType)}\n`;
+    }
+    if (formData.guestCount) {
+      message += `عدد الضيوف: ${getGuestCountName(formData.guestCount)}\n`;
+    }
+    if (formData.colors) {
+      message += `الوان الورد: ${getColorName(formData.colors)}\n`;
+    }
+    if (formData.budget) {
+      message += `الميزانية: ${formData.budgetText.replace(/\n/g, ' ')}\n`;
     }
 
-    const eventLabel = language === 'en' ? 'Event Type' : 'نوع الفعالية';
-    const guestLabel = language === 'en' ? 'Guest Count' : 'عدد الضيوف';
-    const styleLabel = language === 'en' ? 'Decoration Style' : 'أسلوب الديكور';
-    const colorsLabel = language === 'en' ? 'Color Palette' : 'الوان الورد';
-    const budgetLabel = language === 'en' ? 'Budget Range' : 'الميزانية';
-    const notesLabel = language === 'en' ? 'Additional Notes' : 'ملاحظات إضافية';
-    const noneText = language === 'en' ? 'None' : 'لا يوجد';
+    // Venue info
+    if (formData.venueType) {
+      message += `نوع المكان: ${getVenueTypeName(formData.venueType)}\n`;
+    }
+    if (formData.venueLocation) {
+      message += `موقع المكان: ${formData.venueLocation}\n`;
+    }
 
-    const message = `*New Event Inquiry - Alyaa Events*\n\n` +
-      `*${eventLabel}:* ${getEventTypeName(formData.eventType)}\n` +
-      `*${guestLabel}:* ${getGuestCountName(formData.guestCount)}\n` +
-      `*${colorsLabel}:* ${getColorName(formData.colors)}\n` +
-      `*${budgetLabel}:* ${getBudgetName(formData.budget)}\n\n` +
-      `*${notesLabel}:*\n${formData.notes || noneText}` +
-      imageLinks;
+    message += `\nملاحظات إضافية:\n`;
+    const notes = formData.notes || formData.venueNotes;
+    message += notes ? `${notes}\n` : `لا يوجد\n`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/201100496079?text=${encodedMessage}`;
@@ -1041,6 +992,8 @@ function EventPlanner() {
       case 2: return true; // guestCount is optional
       case 3: return formData.colors;
       case 4: return formData.budget;
+      case 5: return formData.venueType;
+      case 6: return true; // image is optional
       default: return true;
     }
   };
@@ -1090,6 +1043,18 @@ function EventPlanner() {
     { id: '500k', name: '15,000 - 30,000 EGP', range: language === 'en' ? 'Luxury' : 'خطوبه (out door)' },
     { id: 'custom', name: '70,000 - 130,000 EGP', range: language === 'en' ? 'Ultra-luxury' : 'فرح' },
   ];
+
+  const venueTypesList = [
+    { id: 'villa', name: language === 'en' ? 'Villa' : 'فيلا' },
+    { id: 'hotel', name: language === 'en' ? 'Hotel' : 'فندق' },
+    { id: 'hall', name: language === 'en' ? 'Hall' : 'قاعة' },
+    { id: 'beach', name: language === 'en' ? 'Beach' : 'شاطئ' },
+    { id: 'garden', name: language === 'en' ? 'Garden' : 'حديقة' },
+    { id: 'rooftop', name: language === 'en' ? 'Rooftop' : 'سطح' },
+    { id: 'other', name: language === 'en' ? 'Other' : 'أخرى' },
+  ];
+
+  const getVenueTypeName = (id) => venueTypesList.find(v => v.id === id)?.name || id;
 
   return (
     <section id="planner" className="section planner">
@@ -1219,7 +1184,10 @@ function EventPlanner() {
                     <div
                       key={budget.id}
                       className={`option-card ${formData.budget === budget.id ? 'selected' : ''}`}
-                      onClick={() => updateFormData('budget', budget.id)}
+                      onClick={() => {
+                        updateFormData('budget', budget.id);
+                        updateFormData('budgetText', `${budget.name}\n${budget.range}`);
+                      }}
                     >
                       <h4>{budget.name}</h4>
                       <p>{budget.range}</p>
@@ -1231,42 +1199,51 @@ function EventPlanner() {
 
             {step === 5 && (
               <motion.div
-                key="step6"
+                key="step5"
                 className="planner-step"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <h3 className="step-title">{t('form.details')}</h3>
-                <p className="step-subtitle">{t('form.detailsSub')}</p>
+                <h3 className="step-title">{language === 'en' ? 'Venue Information' : 'معلومات المكان'}</h3>
+                <p className="step-subtitle">{language === 'en' ? 'Tell us about your event location' : 'أخبرنا عن مكان فعاليتك'}</p>
 
+                {/* Venue Type */}
                 <div className="form-group">
-                  <label className="form-label">{t('form.notes')}</label>
-                  <textarea
-                    className="form-textarea"
-                    placeholder={t('form.notesPlaceholder')}
-                    value={formData.notes}
-                    onChange={(e) => updateFormData('notes', e.target.value)}
-                  ></textarea>
+                  <label className="form-label">{language === 'en' ? 'Venue Type *' : 'نوع المكان *'}</label>
+                  <select
+                    className="form-select"
+                    value={formData.venueType}
+                    onChange={(e) => updateFormData('venueType', e.target.value)}
+                  >
+                    <option value="">{language === 'en' ? 'Select venue type' : 'اختر نوع المكان'}</option>
+                    {venueTypesList.map((venue) => (
+                      <option key={venue.id} value={venue.id}>{venue.name}</option>
+                    ))}
+                  </select>
                 </div>
 
+                {/* Venue Location */}
                 <div className="form-group">
-                  <label className="form-label">{t('form.images')}</label>
-                  <label className="file-upload">
-                    <input type="file" accept="image/*" multiple onChange={handleImageUpload} />
-                    <div className="file-upload-icon">📁</div>
-                    <p>{t('form.imagesUpload')}</p>
-                  </label>
-                  {formDataImages.length > 0 && (
-                    <div className="file-preview">
-                      {formDataImages.map((img, index) => (
-                        <div key={index} className="file-preview-item">
-                          <img src={img.preview} alt={`Upload ${index + 1}`} />
-                          <button className="file-preview-remove" onClick={() => removeImage(index)}>×</button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <label className="form-label">{language === 'en' ? 'Venue Location' : 'موقع المكان'}</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder={language === 'en' ? 'Enter address or paste Google Maps link' : 'اكتب عنوان المكان أو الصق رابط Google Maps'}
+                    value={formData.venueLocation}
+                    onChange={(e) => updateFormData('venueLocation', e.target.value)}
+                  />
+                </div>
+
+                {/* Additional Notes */}
+                <div className="form-group">
+                  <label className="form-label">{language === 'en' ? 'Additional Notes (Optional)' : 'ملاحظات إضافية (اختياري)'}</label>
+                  <textarea
+                    className="form-textarea"
+                    placeholder={language === 'en' ? 'Any other important information...' : 'أي معلومات أخرى مهمة...'}
+                    value={formData.venueNotes}
+                    onChange={(e) => updateFormData('venueNotes', e.target.value)}
+                  ></textarea>
                 </div>
               </motion.div>
             )}
@@ -1293,9 +1270,8 @@ function EventPlanner() {
               <button
                 className="btn planner-submit"
                 onClick={generateWhatsAppMessage}
-                disabled={uploadingImages}
               >
-                {uploadingImages ? (language === 'en' ? 'Uploading images...' : 'جاري رفع الصور...') : t('form.submit')}
+                {t('form.submit')}
               </button>
             )}
           </div>

@@ -6,18 +6,17 @@ import {
   Trash,
   X,
 } from 'phosphor-react';
-import { rentalItemsService, decorationService } from '../../firebase/service';
+import { rentalItemsService } from '../../firebase/service';
 
 const Rentals = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [rentals, setRentals] = useState([]);
-  const [decorations, setDecorations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(searchParams.get('action') === 'add');
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [activeCategory, setActiveCategory] = useState('decoration');
+  const [activeCategory, setActiveCategory] = useState('mirrors-flowers');
 
   const [formData, setFormData] = useState({
     nameEn: '',
@@ -36,10 +35,6 @@ const Rentals = () => {
         // Try to get existing data, or create defaults if empty
         const rentalData = await rentalItemsService.getAllWithDefaults();
         setRentals(rentalData);
-
-        // Also fetch decorations for decoration category
-        const decorationData = await decorationService.getAllWithDefaults();
-        setDecorations(decorationData);
       } catch (err) {
         console.error('Error fetching rentals:', err);
       } finally {
@@ -50,7 +45,7 @@ const Rentals = () => {
   }, []);
 
   const openAddModal = () => {
-    const itemCount = activeCategory === 'decorations' ? decorations.length : rentals.length;
+    const itemCount = rentals.length;
     setFormData({
       nameEn: '',
       nameAr: '',
@@ -116,24 +111,13 @@ const Rentals = () => {
         order: parseInt(formData.order) || 0
       };
 
-      // Use decorationService for decorations, rentalItemsService for other items
-      if (activeCategory === 'decorations') {
-        if (editingId) {
-          await decorationService.update(editingId, itemData);
-        } else {
-          await decorationService.add(itemData);
-        }
-        const data = await decorationService.getAll();
-        setDecorations(data);
+      if (editingId) {
+        await rentalItemsService.update(editingId, itemData);
       } else {
-        if (editingId) {
-          await rentalItemsService.update(editingId, itemData);
-        } else {
-          await rentalItemsService.add(itemData);
-        }
-        const data = await rentalItemsService.getAll();
-        setRentals(data);
+        await rentalItemsService.add(itemData);
       }
+      const data = await rentalItemsService.getAll();
+      setRentals(data);
 
       setShowModal(false);
       setSearchParams({});
@@ -150,15 +134,9 @@ const Rentals = () => {
 
     try {
       setLoading(true);
-      if (activeCategory === 'decorations') {
-        await decorationService.delete(id);
-        const data = await decorationService.getAll();
-        setDecorations(data);
-      } else {
-        await rentalItemsService.delete(id);
-        const data = await rentalItemsService.getAll();
-        setRentals(data);
-      }
+      await rentalItemsService.delete(id);
+      const data = await rentalItemsService.getAll();
+      setRentals(data);
     } catch (err) {
       console.error('Error deleting:', err);
     } finally {
@@ -166,12 +144,9 @@ const Rentals = () => {
     }
   };
 
-  const filteredRentals = activeCategory === 'decorations'
-    ? decorations
-    : rentals.filter(r => r.category === activeCategory);
+  const filteredRentals = rentals.filter(r => r.category === activeCategory);
 
   const categories = [
-    { id: 'decorations', name: 'تصاميم الديكور' },
     { id: 'mirrors-flowers', name: 'مرايا بورد' },
     { id: 'mirrors', name: 'مرايا' },
     { id: 'normalChairs', name: 'كراسي عادية' },
@@ -337,20 +312,18 @@ const Rentals = () => {
                 </div>
               )}
 
-              {activeCategory !== 'decorations' && (
-                <div className="form-group">
+              <div className="form-group">
                   <label>الفئة</label>
                   <select
                     value={formData.category}
                     onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
                     style={{ width: '100%', padding: '12px', border: '2px solid #ddd', borderRadius: '8px', fontSize: '14px' }}
                   >
-                    {categories.filter(cat => cat.id !== 'decorations').map(cat => (
+                    {categories.map(cat => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>
                 </div>
-              )}
 
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
