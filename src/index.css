@@ -663,17 +663,7 @@ html[lang="ar"] .hero-title {
 
 @media (max-width: 767px) {
   .gallery-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-  .gallery-item {
-    aspect-ratio: auto;
-    min-height: 200px;
-  }
-  .gallery-item:nth-child(1),
-  .gallery-item:nth-child(4) {
-    aspect-ratio: auto;
-    min-height: 200px;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -682,18 +672,18 @@ html[lang="ar"] .hero-title {
   border-radius: var(--radius-card);
   overflow: hidden;
   cursor: pointer;
-  aspect-ratio: 3/4;
+  aspect-ratio: 4/5;
   transition: var(--transition);
 }
 
 .gallery-item:nth-child(1) {
   grid-row: span 2;
-  aspect-ratio: 3/5;
+  aspect-ratio: auto;
 }
 
 .gallery-item:nth-child(4) {
   grid-row: span 2;
-  aspect-ratio: 3/5;
+  aspect-ratio: auto;
 }
 
 .gallery-item img {
@@ -1731,8 +1721,8 @@ html[lang="ar"] .hero-title {
 .gallery-wrapper {
   position: relative;
   width: 100%;
-  max-width: 500px;
-  aspect-ratio: 3/4;
+  max-width: 450px;
+  aspect-ratio: 4/3;
   overflow: hidden;
   border-radius: 20px;
 }
@@ -1815,18 +1805,24 @@ html[lang="ar"] .hero-title {
 @media (max-width: 600px) {
   .gallery-slider {
     max-width: 100%;
-    padding: 0 10px;
+    padding: 0 8px;
+    gap: 12px;
   }
 
   .gallery-wrapper {
-    max-width: 300px;
-    aspect-ratio: 3/4;
+    max-width: min(92vw, 460px);
+    aspect-ratio: 4/5;
+    min-height: 420px;
   }
 
   .gallery-nav-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .gallery-dots {
+    margin-top: 32px;
   }
 }
 
