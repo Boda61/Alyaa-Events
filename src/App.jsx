@@ -45,12 +45,12 @@ const defaultServicesList = [
 const instagramImages = [
   '/picture/design 10.jpeg',
   '/picture/design 11.jpeg',
-  '/picture/design 12.jpeg',
+  '/picture/design 1.jpeg',
   '/picture/design 13.jpeg',
   '/picture/design 14.jpeg',
-  '/picture/design 15.jpeg',
+  '/picture/design 2.jpeg',
   '/picture/design 16.jpeg',
-  '/picture/design 17.jpeg',
+  '/picture/Design 20.jpeg',
 ];
 
 // Animation variants
@@ -390,15 +390,15 @@ function About() {
 
             <div className="about-stats">
               <div className="stat-item">
-                <div className="stat-number"><Counter end={4} /> {t('about.years')}</div>
+                <div className="stat-number"><Counter end={3} /> {t('about.years')}</div>
                 <div className="stat-label">{t('about.experience')}</div>
               </div>
               <div className="stat-item">
-                <div className="stat-number"><Counter end={500} />+</div>
+                <div className="stat-number"><Counter end={200} />+</div>
                 <div className="stat-label">{t('about.events')}</div>
               </div>
               <div className="stat-item">
-                <div className="stat-number"><Counter end={1000} />+</div>
+                <div className="stat-number"><Counter end={500} />+</div>
                 <div className="stat-label">{t('about.clients')}</div>
               </div>
             </div>
@@ -919,7 +919,7 @@ function MirrorGallery() {
 
   const mirrorItems = [
     { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا و لوحه ترحيب.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا..jpeg' },
     { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 6.jpeg' },
     { name: '  ', nameEn: '  ', image: '/picture/design 6.jpeg' },
     { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 4.jpeg' },
@@ -931,6 +931,7 @@ function MirrorGallery() {
     { name: '  ', nameEn: '  ', image: '/picture/design 7.jpeg' },
     { name: '  ', nameEn: '  ', image: '/picture/ديكور باب شقه 3.jpeg' },
     { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 7.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 8.jpeg' },
     { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 3.jpeg' },
     { name: '  ', nameEn: '  ', image: '/picture/ديكور باب الشقه 2.jpeg' },
     { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 10.jpeg' },
@@ -1050,6 +1051,9 @@ function RentalGallery() {
     { name: 'كرسي خشب', nameEn: 'Wooden Chair', image: '/picture/كرسي خشب 3 .jpeg' },
     { name: 'ترابيزه زجزاج ', nameEn: 'Zigzag table', image: '/picture/ترابيزه زجزاج.jpeg' },
     { name: 'كرسي مدفع (ترابيزه بيضاوي)', nameEn: 'Cannon Chair (Oval Table)', image: '/picture/كراسي مدفع 3.jpeg' },
+    { name: 'ورد ع السلم', nameEn: 'Roses on the Staircase', image: '/picture/ديكور السلم.jpeg' },
+    { name: 'ورد ع السلم', nameEn: 'Roses on the Staircase', image: '/picture/ديكور سلم 2.jpeg' },
+    { name: 'ورد ع السلم', nameEn: 'Roses on the Staircase', image: '/picture/ديكور سلم 3.jpeg' },
   ];
 
   // Auto play - change slide every 4 seconds
@@ -1307,14 +1311,6 @@ function EventPlanner() {
     { id: '500', name: '500+', range: language === 'en' ? '300+ guests' : '300+ ضيف' },
   ];
 
-  const decorationStylesList = [
-    { id: 'classic', name: language === 'en' ? 'Classic Elegant' : 'كلاسيكي أنيق', description: language === 'en' ? 'Timeless sophistication' : 'أناقة خالدة' },
-    { id: 'modern', name: language === 'en' ? 'Modern Minimalist' : 'حديث بسيط', description: language === 'en' ? 'Clean & contemporary' : 'نظيف وعصري' },
-    { id: 'bohemian', name: language === 'en' ? 'Bohemian' : '.bohemian', description: language === 'en' ? 'Free-spirited & natural' : 'حر وطبيعي' },
-    { id: 'glamour', name: language === 'en' ? 'Glamour' : 'فاخر', description: language === 'en' ? 'Luxurious & opulent' : 'فاخر وراقٍ' },
-    { id: 'rustic', name: language === 'en' ? 'Rustic Chic' : 'ريفي أنيق', description: language === 'en' ? 'Warm & inviting' : 'دافئ ومرحّب' },
-    { id: 'floral', name: language === 'en' ? 'Floral Paradise' : 'جنة الأزهار', description: language === 'en' ? 'Flower-focused design' : 'تصميم مركز على الزهور' },
-  ];
 
   // قائمة الألوان المنفردة للاختيار
   const availableColors = [
@@ -1334,7 +1330,7 @@ function EventPlanner() {
     { id: '150k', name: '15,000 - 25,000 EGP', range: language === 'en' ? 'Mid-range' : 'كتب كتاب (out door)' },
     { id: '250k', name: '3000 - 8000 EGP', range: language === 'en' ? 'Premium' : 'كتب كتاب(in door)' },
     { id: '500k', name: '15,000 - 30,000 EGP', range: language === 'en' ? 'Luxury' : 'خطوبه (out door)' },
-    { id: 'custom', name: '70,000 - 130,000 EGP', range: language === 'en' ? 'Ultra-luxury' : 'فرح' },
+    { id: 'custom', name: '70,000 - 150,000 EGP', range: language === 'en' ? 'Ultra-luxury' : 'فرح' },
   ];
 
   const venueTypesList = [
