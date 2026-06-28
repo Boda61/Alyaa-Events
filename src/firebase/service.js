@@ -21,6 +21,42 @@ import {
 import { db, storage } from './config';
 
 // ========================================
+// Cloudinary Upload using Fetch API (Frontend only)
+// ========================================
+export const uploadToCloudinary = async (file, folder = 'general') => {
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
+
+  if (!cloudName || cloudName === 'your_cloud_name') {
+    throw new Error('Cloudinary not configured. Please add VITE_CLOUDINARY_CLOUD_NAME to .env');
+  }
+
+  // Upload to Cloudinary using unsigned upload - send file directly
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', uploadPreset);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    {
+      method: 'POST',
+      body: formData
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || 'Upload failed');
+  }
+
+  const result = await response.json();
+  return {
+    imageUrl: result.secure_url,
+    publicId: result.public_id
+  };
+};
+
+// ========================================
 // In-Memory Cache with TTL
 // ========================================
 const cache = new Map();

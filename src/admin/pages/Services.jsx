@@ -9,8 +9,7 @@ import {
   Upload,
   Image
 } from 'phosphor-react';
-import { servicesService } from '../../firebase/service';
-import { uploadImageNoDoc } from '../../firebase/service';
+import { servicesService, uploadToCloudinary } from '../../firebase/service';
 
 const Services = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -85,12 +84,25 @@ const Services = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Validate image
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('يرجى اختيار صورة صحيحة (JPEG, PNG, WebP, GIF)');
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('حجم الصورة يجب أن يكون أقل من 10 ميجابايت');
+      return;
+    }
+
     try {
       setSaving(true);
-      const imageUrl = await uploadImageNoDoc('services', file, file.name);
-      setFormData(prev => ({ ...prev, image: imageUrl }));
+      const result = await uploadToCloudinary(file, 'services');
+      setFormData(prev => ({ ...prev, image: result.imageUrl }));
     } catch (err) {
-      setError('حدث خطأ في رفع الصورة');
+      setError('حدث خطأ في رفع الصورة. يرجى المحاولة مرة أخرى');
       console.error(err);
     } finally {
       setSaving(false);

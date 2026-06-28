@@ -6,9 +6,10 @@ import {
   Trash,
   X,
   UploadSimple,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Spinner
 } from 'phosphor-react';
-import { decorationService } from '../../firebase/service';
+import { decorationService, uploadToCloudinary } from '../../firebase/service';
 
 const DecorationPrices = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -24,9 +25,12 @@ const DecorationPrices = () => {
     name: '',
     price: '',
     imageUrl: '',
+    publicId: '',
     order: 0,
     setupType: ''
   });
+
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const setupTypeOptions = [
     { value: 'بدون كنبة', label: 'بدون كنبة' },
@@ -52,11 +56,33 @@ const DecorationPrices = () => {
     fetchDecorations();
   }, []);
 
+  // Image validation
+  const validateImage = (file) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('يرجى اختيار صورة صحيحة (JPEG, PNG, WebP, GIF)');
+      return false;
+    }
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('حجم الصورة يجب أن يكون أقل من 10 ميجابايت');
+      return false;
+    }
+    return true;
+  };
+
+  // Check if URL is valid Cloudinary URL (not blob)
+  const isValidImageUrl = (url) => {
+    if (!url) return false;
+    return url.startsWith('http') && !url.startsWith('blob:');
+  };
+
   const openAddModal = () => {
     setFormData({
       name: '',
       price: '',
       imageUrl: '',
+      publicId: '',
       order: decorations.length,
       setupType: ''
     });
@@ -65,6 +91,7 @@ const DecorationPrices = () => {
     setEditingId(null);
     setShowModal(true);
     setError('');
+    setUploadProgress(0);
     setSearchParams({ action: 'add' });
   };
 
@@ -73,6 +100,7 @@ const DecorationPrices = () => {
       name: item.name || '',
       price: item.price || '',
       imageUrl: item.imageUrl || '',
+      publicId: item.publicId || '',
       order: item.order || 0,
       setupType: item.setupType || ''
     });
@@ -81,13 +109,57 @@ const DecorationPrices = () => {
     setEditingId(item.id);
     setShowModal(true);
     setError('');
+    setUploadProgress(0);
   };
 
-  const handleImageSelect = (e) => {
+  const handleImageSelect = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setSelectedImage(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (!file) return;
+
+    // Validate image
+    if (!validateImage(file)) {
+      e.target.value = '';
+      return;
+    }
+
+    setError('');
+    setUploading(true);
+    setUploadProgress(10);
+
+    // Keep selected file for upload, show loading state - NO blob URL
+    setSelectedImage(file);
+
+    try {
+      setUploadProgress(40);
+
+      // Upload to Cloudinary
+      const result = await uploadToCloudinary(file, 'decorations');
+
+      setUploadProgress(100);
+
+      // Update form with Cloudinary URL only
+      setFormData(prev => ({
+        ...prev,
+        imageUrl: result.imageUrl,
+        publicId: result.publicId
+      }));
+
+      // Update preview to Cloudinary URL (only valid http URL)
+      setPreviewUrl(result.imageUrl);
+
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError('حدث خطأ في رفع الصورة. يرجى المحاولة مرة أخرى');
+      setFormData(prev => ({
+        ...prev,
+        imageUrl: '',
+        publicId: ''
+      }));
+      setPreviewUrl('');
+    } finally {
+      setUploading(false);
+      setSelectedImage(null);
+      e.target.value = '';
     }
   };
 
@@ -108,11 +180,14 @@ const DecorationPrices = () => {
     }
 
     try {
-      // Skip image upload for now due to Storage plan requirement
+      // Validate image URL before saving
+      const validImageUrl = isValidImageUrl(formData.imageUrl) ? formData.imageUrl : '';
+
       const itemData = {
         name: formData.name,
         price: parseInt(formData.price) || 0,
-        imageUrl: '', // Image upload disabled - needs Firebase Storage upgrade
+        imageUrl: validImageUrl,
+        publicId: formData.publicId || '',
         order: parseInt(formData.order) || 0,
         setupType: formData.setupType || ''
       };
@@ -184,14 +259,20 @@ const DecorationPrices = () => {
           {decorations.sort((a, b) => a.order - b.order).map(item => (
             <div key={item.id} className="decoration-card">
               <div className="decoration-image">
-                {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.name} />
-                ) : (
-                  <div className="no-image">
-                    <ImageIcon size={48} />
-                    <span>لا توجد صورة</span>
-                  </div>
-                )}
+                {item.imageUrl && isValidImageUrl(item.imageUrl) ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextSibling?.style?.removeProperty('display');
+                    }}
+                  />
+                ) : null}
+                <div className="no-image" style={{ display: item.imageUrl && isValidImageUrl(item.imageUrl) ? 'none' : 'flex' }}>
+                  <ImageIcon size={48} />
+                  <span>لا توجد صورة</span>
+                </div>
               </div>
               <div className="decoration-info">
                 <h3>{item.name}</h3>
@@ -229,16 +310,16 @@ const DecorationPrices = () => {
               <div className="form-group">
                 <label>الصورة</label>
                 <div className="image-upload-area">
-                  {(previewUrl || formData.imageUrl) ? (
+                  {(isValidImageUrl(previewUrl) || isValidImageUrl(formData.imageUrl)) ? (
                     <div className="image-preview">
-                      <img src={previewUrl || formData.imageUrl} alt="Preview" />
+                      <img src={previewUrl || formData.imageUrl} alt="Preview" onError={(e) => e.currentTarget.style.display = 'none'} />
                       <button
                         type="button"
                         className="remove-image"
                         onClick={() => {
                           setSelectedImage(null);
                           setPreviewUrl('');
-                          setFormData(prev => ({ ...prev, imageUrl: '' }));
+                          setFormData(prev => ({ ...prev, imageUrl: '', publicId: '' }));
                         }}
                       >
                         <X size={16} />

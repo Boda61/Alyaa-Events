@@ -517,6 +517,15 @@ function Pricing() {
     fetchDecorations();
   }, []);
 
+  // Get valid image URL with fallback
+  const getValidImageUrl = (item, index) => {
+    if (item.imageUrl && item.imageUrl.startsWith('http') && !item.imageUrl.startsWith('blob:')) {
+      return item.imageUrl;
+    }
+    // Fallback to local image
+    return `/picture/design ${(index % 15) + 1}.jpeg`;
+  };
+
   // Default designs if no data
   const designs = decorations.length > 0 ? decorations : [
     { name: 'Design 1', price: 35000, imageUrl: '' },
@@ -526,7 +535,14 @@ function Pricing() {
     { name: 'Design 5', price: 50000, imageUrl: '' },
     { name: 'Design 6', price: 60000, imageUrl: '' },
     { name: 'Design 7', price: 42000, imageUrl: '' },
-    { name: 'Design 8', price: 38000, imageUrl: '' }
+    { name: 'Design 8', price: 38000, imageUrl: '' },
+    { name: 'Design 9', price: 38000, imageUrl: '' },
+    { name: 'Design 10', price: 38000, imageUrl: '' },
+    { name: 'Design 11', price: 38000, imageUrl: '' },
+    { name: 'Design 12', price: 38000, imageUrl: '' },
+    { name: 'Design 13', price: 38000, imageUrl: '' },
+    { name: 'Design 14', price: 38000, imageUrl: '' },
+    { name: 'Design 15', price: 38000, imageUrl: '' }
   ];
 
   const openModal = (design) => {
@@ -584,7 +600,14 @@ function Pricing() {
               whileHover={{ scale: 1.03 }}
             >
               <div className="design-image">
-                <img src={item.imageUrl || item.img || `/picture/design ${index + 1}.jpeg`} alt={item.name || `Design ${index + 1}`} />
+                <img
+                  src={getValidImageUrl(item, index)}
+                  alt={item.name || `Design ${index + 1}`}
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src = `/picture/design ${(index % 15) + 1}.jpeg`;
+                  }}
+                />
               </div>
               <div className="design-info">
                 <span className="design-price">
@@ -620,7 +643,14 @@ function Pricing() {
               </button>
 
               <div className="modal-image">
-                <img src={selectedDesign.imageUrl || `/picture/design ${designs.indexOf(selectedDesign) + 1}.jpeg`} alt={selectedDesign.name} />
+                <img
+                  src={getValidImageUrl(selectedDesign, designs.indexOf(selectedDesign))}
+                  alt={selectedDesign.name}
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src = `/picture/design ${(designs.indexOf(selectedDesign) % 15) + 1}.jpeg`;
+                  }}
+                />
               </div>
 
               <div className="modal-content">
@@ -881,6 +911,248 @@ function RentalPrices() {
   );
 }
 
+// Mirror & Welcome Board Gallery Section
+function MirrorGallery() {
+  const { language } = useLanguage();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const mirrorItems = [
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا و لوحه ترحيب.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 6.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/design 6.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 4.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 8.jpeg' },
+    { name: '  ', nameEn: '   ', image: '/picture/لوحه ترحيب 5.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور باب الشقه.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 9.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 3.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/design 7.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور باب شقه 3.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 7.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 3.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور باب الشقه 2.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 10.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 5.jpeg' },
+    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 6.jpeg' },
+  ];
+
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % mirrorItems.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isPaused, mirrorItems.length]);
+
+  const [touchStart, setTouchStart] = useState(null);
+
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!touchStart) return;
+    const touch = e.changedTouches[0];
+    const diffX = touch.clientX - touchStart.x;
+    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(touch.clientY - touchStart.y)) {
+      if (diffX > 0) {
+        setCurrentSlide(prev => (prev - 1 + mirrorItems.length) % mirrorItems.length);
+      } else {
+        setCurrentSlide(prev => (prev + 1) % mirrorItems.length);
+      }
+    }
+    setTouchStart(null);
+  };
+
+  const nextSlide = () => setCurrentSlide(prev => (prev + 1) % mirrorItems.length);
+  const prevSlide = () => setCurrentSlide(prev => (prev - 1 + mirrorItems.length) % mirrorItems.length);
+
+  return (
+    <section id="mirror-gallery" className="section mirror-gallery">
+      <div className="container">
+        <motion.div
+          className="section-header"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+        >
+          <span className="section-label">{language === 'en' ? 'Gallery' : 'معرض'}</span>
+          <h2 className="section-title">{language === 'en' ? 'Mirrors & Welcome Boards' : 'المرايا ولوحات الترحيب'}</h2>
+        </motion.div>
+
+        <div
+          className="gallery-slider"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <button className="gallery-nav-btn prev" onClick={prevSlide}>
+            ❮
+          </button>
+
+          <div className="gallery-wrapper">
+            {mirrorItems.map((item, index) => (
+              <div
+                key={index}
+                className={`gallery-card ${index === currentSlide ? 'active' : ''}`}
+              >
+                <div className="gallery-image">
+                  <img
+                    src={item.image}
+                    alt={language === 'ar' ? item.name : item.nameEn}
+                    loading="lazy"
+                  />
+                </div>
+                <div className="gallery-info">
+                  <h3>{language === 'ar' ? item.name : item.nameEn}</h3>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button className="gallery-nav-btn next" onClick={nextSlide}>
+            ❯
+          </button>
+        </div>
+
+        <div className="gallery-dots">
+          {mirrorItems.map((_, index) => (
+            <button
+              key={index}
+              className={`gallery-dot ${index === currentSlide ? 'active' : ''}`}
+              onClick={() => setCurrentSlide(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Rental Gallery Slider Section
+function RentalGallery() {
+  const { language } = useLanguage();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Gallery data for chairs & tables
+  const galleryItems = [
+    { name: 'كرسي مدفع ', nameEn: 'Cannon chair', image: '/picture/كراسي مدفع 2.jpeg' },
+    { name: ' كرسي اكليرك (ترابيزه اكليرك)', nameEn: 'Acrylic chair (acrylic table)', image: '/picture/كرسي اكليرك.jpeg' },
+    { name: ' كرسي خشب (ترابيزه خشب)', nameEn: 'Wooden chair (wooden table)', image: '/picture/كرسي خشب.jpeg' },
+    { name: ' كرسي خشب اكس', nameEn: 'Wooden Chair X', image: '/picture/كرسي خشب اكس .jpeg' },
+    { name: 'كرسي خشب', nameEn: 'Wooden Chair', image: '/picture/كرسي خشب 3 .jpeg' },
+    { name: 'ترابيزه زجزاج ', nameEn: 'Zigzag table', image: '/picture/ترابيزه زجزاج.jpeg' },
+    { name: 'كرسي مدفع (ترابيزه بيضاوي)', nameEn: 'Cannon Chair (Oval Table)', image: '/picture/كراسي مدفع 3.jpeg' },
+  ];
+
+  // Auto play - change slide every 4 seconds
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % galleryItems.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isPaused, galleryItems.length]);
+
+  // Swipe handlers for mobile
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!touchStart.current) return;
+    const touch = e.changedTouches[0];
+    const diffX = touch.clientX - touchStart.current.x;
+    const diffY = touch.clientY - touchStart.current.y;
+
+    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX > 0) {
+        setCurrentSlide(prev => (prev - 1 + galleryItems.length) % galleryItems.length);
+      } else {
+        setCurrentSlide(prev => (prev + 1) % galleryItems.length);
+      }
+    }
+    setTouchStart(null);
+  };
+
+  const [touchStart, setTouchStart] = useState(null);
+
+  const nextSlide = () => setCurrentSlide(prev => (prev + 1) % galleryItems.length);
+  const prevSlide = () => setCurrentSlide(prev => (prev - 1 + galleryItems.length) % galleryItems.length);
+
+  return (
+    <section id="rental-gallery" className="section rental-gallery">
+      <div className="container">
+        <motion.div
+          className="section-header"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+        >
+          <span className="section-label">{language === 'en' ? 'Gallery' : 'معرض'}</span>
+          <h2 className="section-title">{language === 'en' ? 'Mirrors & Chairs Gallery' : 'معرض التربيزات والكراسي'}</h2>
+        </motion.div>
+
+        <div
+          className="gallery-slider"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <button className="gallery-nav-btn prev" onClick={prevSlide}>
+            ❮
+          </button>
+
+          <div className="gallery-wrapper">
+            {galleryItems.map((item, index) => (
+              <div
+                key={index}
+                className={`gallery-card ${index === currentSlide ? 'active' : ''}`}
+              >
+                <div className="gallery-image">
+                  <img
+                    src={item.image}
+                    alt={language === 'ar' ? item.name : item.nameEn}
+                    loading="lazy"
+                  />
+                </div>
+                <div className="gallery-info">
+                  <h3>{language === 'ar' ? item.name : item.nameEn}</h3>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button className="gallery-nav-btn next" onClick={nextSlide}>
+            ❯
+          </button>
+        </div>
+
+        <div className="gallery-dots">
+          {galleryItems.map((_, index) => (
+            <button
+              key={index}
+              className={`gallery-dot ${index === currentSlide ? 'active' : ''}`}
+              onClick={() => setCurrentSlide(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // Event Planner Section
 function EventPlanner() {
   const [step, setStep] = useState(1);
@@ -890,7 +1162,7 @@ function EventPlanner() {
     eventType: '',
     guestCount: '',
     style: '',
-    colors: '',
+    colors: [],
     budget: '',
     budgetText: '',
     notes: '',
@@ -902,6 +1174,22 @@ function EventPlanner() {
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  // Toggle color selection - allow 1-5 colors
+  const toggleColor = (colorId) => {
+    const currentColors = formData.colors || [];
+    if (currentColors.includes(colorId)) {
+      // Remove color if already selected
+      updateFormData('colors', currentColors.filter(c => c !== colorId));
+    } else {
+      // Add color only if less than 5 selected
+      if (currentColors.length < 5) {
+        updateFormData('colors', [...currentColors, colorId]);
+      }
+    }
+  };
+
+  const isColorSelected = (colorId) => (formData.colors || []).includes(colorId);
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 5));
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
@@ -924,7 +1212,7 @@ function EventPlanner() {
   const getEventTypeName = (id) => eventTypesList.find(t => t.id === id)?.name || id;
   const getGuestCountName = (id) => guestCountsList.find(g => g.id === id)?.name || id;
   const getStyleName = (id) => decorationStylesList.find(s => s.id === id)?.name || id;
-  const getColorName = (id) => colorPalettesList.find(c => c.id === id)?.name || id;
+  const getColorName = (id) => availableColors.find(c => c.id === id)?.name || id;
   const getBudgetName = (id) => budgetRangesList.find(b => b.id === id)?.name || id;
 
   // Upload image to free hosting service
@@ -962,8 +1250,9 @@ function EventPlanner() {
     if (formData.guestCount) {
       message += `عدد الضيوف: ${getGuestCountName(formData.guestCount)}\n`;
     }
-    if (formData.colors) {
-      message += `الوان الورد: ${getColorName(formData.colors)}\n`;
+    if (formData.colors && formData.colors.length > 0) {
+      const colorNames = formData.colors.map(id => getColorName(id)).join(' - ');
+      message += `الوان الورد: ${colorNames}\n`;
     }
     if (formData.budget) {
       message += `الميزانية: ${formData.budgetText.replace(/\n/g, ' ')}\n`;
@@ -990,7 +1279,7 @@ function EventPlanner() {
     switch(step) {
       case 1: return formData.eventType;
       case 2: return true; // guestCount is optional
-      case 3: return formData.colors;
+      case 3: return formData.colors && formData.colors.length >= 1;
       case 4: return formData.budget;
       case 5: return formData.venueType;
       case 6: return true; // image is optional
@@ -1027,13 +1316,17 @@ function EventPlanner() {
     { id: 'floral', name: language === 'en' ? 'Floral Paradise' : 'جنة الأزهار', description: language === 'en' ? 'Flower-focused design' : 'تصميم مركز على الزهور' },
   ];
 
-  const colorPalettesList = [
-    { id: 'blush', name: language === 'en' ? 'Blush Roses' : 'ورود بلاش', colors: ['#FFB6C1', '#FFC0CB', '#DB7093'] },
-    { id: 'peach', name: language === 'en' ? 'Peach & Coral' : 'خوخى ومرجاني', colors: ['#FFDAB9', '#FF7F50', '#FA8072'] },
-    { id: 'red', name: language === 'en' ? 'Red Roses' : 'ورود حمراء', colors: ['#DC143C', '#B22222', '#8B0000'] },
-    { id: 'white', name: language === 'en' ? 'White & Ivory' : 'أبيض وعاجي', colors: ['#FFFAFA', '#F5F5F5', '#FAF0E6'] },
-    { id: 'pastel', name: language === 'en' ? 'Pastel Dreams' : 'أحلام باستيل', colors: ['#FFB7C5', '#E6E6FA', '#F0FFF0'] },
-    { id: 'burgundy', name: language === 'en' ? 'Wine & Gold' : 'تين وزهبي', colors: ['#722F37', '#FFD700', '#B8860B'] },
+  // قائمة الألوان المنفردة للاختيار
+  const availableColors = [
+    { id: 'white', name: language === 'en' ? 'White' : 'أبيض', color: '#FFFFFF' },
+    { id: 'ivory', name: language === 'en' ? 'ofwhite' : 'اوف وايت', color: '#F5F5DC' },
+    { id: 'blush', name: language === 'en' ? 'Blush' : 'بلاش', color: '#FFB6C1' },
+    { id: 'pink', name: language === 'en' ? 'Pink' : 'وردي', color: '#FF69B4' },
+    { id: 'coral', name: language === 'en' ? 'purple' : 'بنفسجي', color: '#a03ca3' },
+    { id: 'peach', name: language === 'en' ? 'beige' : 'بيچ', color: '#FFDAB9' },
+    { id: 'red', name: language === 'en' ? 'Red' : 'أحمر', color: '#DC143C' },
+    { id: 'burgundy', name: language === 'en' ? 'brown' : 'بني', color: '#722F37' },
+    { id: 'lavender', name: language === 'en' ? 'baby blue' : 'بيبي بلو', color: '#2486d1' },
   ];
 
   const budgetRangesList = [
@@ -1050,7 +1343,7 @@ function EventPlanner() {
     { id: 'hall', name: language === 'en' ? 'Hall' : 'قاعة' },
     { id: 'beach', name: language === 'en' ? 'Beach' : 'شاطئ' },
     { id: 'garden', name: language === 'en' ? 'Garden' : 'حديقة' },
-    { id: 'rooftop', name: language === 'en' ? 'Rooftop' : 'سطح' },
+    { id: 'rooftop', name: language === 'en' ? 'Rooftop' : 'روف' },
     { id: 'other', name: language === 'en' ? 'Other' : 'أخرى' },
   ];
 
@@ -1149,20 +1442,47 @@ function EventPlanner() {
                 exit={{ opacity: 0, x: -20 }}
               >
                 <h3 className="step-title">{t('form.colors')}</h3>
-                <p className="step-subtitle">{t('form.colorsSub')}</p>
+                <p className="step-subtitle">
+                  {language === 'en'
+                    ? `Select 1-5 colors for your flowers`
+                    : `اختر من 1 الي 5 الوان لورود المناسبه`}
+                </p>
+
+                {/* Selected colors count info */}
+                <div className="selected-count-info">
+                  <span style={{
+                    color: (formData.colors?.length || 0) >= 1 && (formData.colors?.length || 0) <= 5 ? '#22c55e' : '#eab308',
+                    fontWeight: 600
+                  }}>
+                    {formData.colors?.length || 0}/5
+                  </span>
+                  <span style={{ marginRight: '8px', color: '#666' }}>
+                    {language === 'en' ? 'colors selected' : 'ألوان مختاره'}
+                  </span>
+                </div>
+
                 <div className="option-grid">
-                  {colorPalettesList.map((palette) => (
+                  {availableColors.map((colorItem) => (
                     <div
-                      key={palette.id}
-                      className={`option-card ${formData.colors === palette.id ? 'selected' : ''}`}
-                      onClick={() => updateFormData('colors', palette.id)}
+                      key={colorItem.id}
+                      className={`option-card color-card ${isColorSelected(colorItem.id) ? 'selected' : ''}`}
+                      onClick={() => toggleColor(colorItem.id)}
+                      style={{
+                        border: isColorSelected(colorItem.id) ? '3px solid #5B3E2B' : '2px solid #e5e5e5',
+                        background: isColorSelected(colorItem.id) ? '#FDF6EF' : '#fff'
+                      }}
                     >
-                      <h4>{palette.name}</h4>
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '8px' }}>
-                        {palette.colors.map((color, i) => (
-                          <span key={i} style={{ width: '20px', height: '20px', borderRadius: '50%', background: color, display: 'inline-block' }}></span>
-                        ))}
-                      </div>
+                      <div
+                        className="color-circle"
+                        style={{
+                          background: colorItem.color,
+                          border: colorItem.color === '#FFFFFF' || colorItem.color === '#F5F5DC' ? '2px solid #ccc' : 'none'
+                        }}
+                      ></div>
+                      <h4>{colorItem.name}</h4>
+                      {isColorSelected(colorItem.id) && (
+                        <span className="color-check">✓</span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1669,7 +1989,7 @@ function Contact() {
             </div>
             <h3>{t('contact.phone')}</h3>
             <p>
-              <a href="tel:+201100496079">+20 110 049 6079</a>
+              <a href="tel:+100496079">+20 110 049 6079</a>
             </p>
           </motion.div>
           <motion.div className="contact-card" variants={fadeInUp}>
@@ -1773,6 +2093,8 @@ function App() {
       <Services />
       <Pricing />
       <RentalPrices />
+      <MirrorGallery />
+      <RentalGallery />
       <EventPlanner />
       <Process />
       <Testimonials />

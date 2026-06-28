@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { settingsService, uploadImageNoDoc, clearAllAdminData } from '../../firebase/service';
+import { settingsService, uploadToCloudinary, clearAllAdminData } from '../../firebase/service';
 
 const Settings = () => {
   const [settings, setSettings] = useState({
@@ -48,12 +48,25 @@ const Settings = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Validate image
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('يرجى اختيار صورة صحيحة (JPEG, PNG, WebP, GIF)');
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('حجم الصورة يجب أن يكون أقل من 10 ميجابايت');
+      return;
+    }
+
     try {
       setSaving(true);
-      const imageUrl = await uploadImageNoDoc('settings', file, file.name);
-      setSettings(prev => ({ ...prev, heroImage: imageUrl }));
+      const result = await uploadToCloudinary(file, 'settings');
+      setSettings(prev => ({ ...prev, heroImage: result.imageUrl }));
     } catch (err) {
-      setError('حدث خطأ في رفع الصورة');
+      setError('حدث خطأ في رفع الصورة. يرجى المحاولة مرة أخرى');
       console.error(err);
     } finally {
       setSaving(false);

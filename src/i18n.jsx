@@ -83,7 +83,7 @@ const translations = {
     },
     // Footer
     footer: {
-      about: 'Since 2012, we have been dedicated to creating unforgettable moments and transforming ordinary venues into extraordinary celebrations.',
+      about: 'Since 2023, we have been dedicated to creating unforgettable moments and transforming ordinary venues into extraordinary celebrations.',
       quickLinks: 'Quick Links',
       services: 'Services',
       contact: 'Contact',
@@ -141,7 +141,7 @@ const translations = {
     about: {
       label: 'من نحن',
       title: 'فن الاحتفالات الراقية',
-      text: 'تأسست شركة أليس إيفنتس في عام 2012، وتحوّل الأماكن العادية إلى احتفالات استثنائية. شغفنا بالكمال واهتمامنا بالتفاصيل جعلنا من أكثر شركات ديكور الأفراح والمناسبات طلباً في المنطقة.',
+      text: 'تأسست شركة أليس إيفنتس في عام 2023، وتحوّل الأماكن العادية إلى احتفالات استثنائية. شغفنا بالكمال واهتمامنا بالتفاصيل جعلنا من أكثر شركات ديكور الأفراح والمناسبات طلباً في المنطقة.',
       years: 'سنوات',
       events: 'فعالية',
       clients: 'عميل',
@@ -194,7 +194,7 @@ const translations = {
     },
     // Footer
     footer: {
-      about: 'منذ عام 2012،نحن نختص بصنع اللحظات لا تُنسى وتحويل الاماكن العادية لاحتفالات استثنائية.',
+      about: 'منذ عام 2023،نحن نختص بصنع اللحظات لا تُنسى وتحويل الاماكن العادية لاحتفالات استثنائية.',
       quickLinks: 'روابط سريعة',
       services: 'الخدمات',
       contact: 'تواصل معنا',
