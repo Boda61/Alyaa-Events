@@ -32,9 +32,9 @@ const AdminDashboard = () => {
     { path: 'dashboard', icon: House, label: 'الرئيسية', labelEn: 'Dashboard' },
     { path: 'portfolio', icon: Image, label: 'أعمالنا', labelEn: 'Portfolio' },
     { path: 'services', icon: Scissors, label: 'الخدمات', labelEn: 'Services' },
-    { path: 'rentals', icon: Armchair, label: 'ت الإيجار', labelEn: 'Rentals' },
+    { path: 'rentals', icon: Armchair, label: 'اسعار الإيجار', labelEn: 'Rentals' },
     { path: 'decoration', icon: Flower, label: 'اسعار الديكور', labelEn: 'Decoration Prices' },
-    { path: 'testimonials', icon: ChatCircle, label: 'طرق التواصل', labelEn: 'Contact' },
+    { path: 'testimonials', icon: ChatCircle, label: 'اراء العملاء ', labelEn: 'Contact' },
     { path: 'settings', icon: Gear, label: 'الإعدادات', labelEn: 'Settings' },
   ];
 

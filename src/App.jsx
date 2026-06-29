@@ -253,9 +253,20 @@ function Gallery() {
   const mapPortfolioWithImages = (portfolioData) => {
     return portfolioData.map((item, index) => {
       // Use uploaded image if available, otherwise use local fallback
-      const imageSrc = item.images && item.images.length > 0
-        ? item.images[0]
-        : localGalleryImages[index]?.src || '';
+      // Handle both old format (images array) and new format (imageUrl)
+      let imageSrc = '';
+      if (item.imageUrl) {
+        // New format
+        imageSrc = item.imageUrl;
+      } else if (item.images && item.images.length > 0) {
+        // Old format
+        const firstImage = item.images[0];
+        imageSrc = typeof firstImage === 'string' ? firstImage : firstImage?.url || '';
+      }
+      // Only use valid URLs (not empty strings)
+      if (!imageSrc) {
+        imageSrc = localGalleryImages[index]?.src || '';
+      }
       return {
         ...item,
         src: imageSrc,
@@ -285,7 +296,9 @@ function Gallery() {
     fetchGallery();
   }, []);
 
-  const images = galleryImages.length > 0 ? galleryImages : localGalleryImages;
+  const images = galleryImages.length > 0
+    ? galleryImages.filter(img => img.src) // Filter out empty images
+    : localGalleryImages;
 
   const openLightbox = (image) => {
     setSelectedImage(image);
@@ -560,14 +573,7 @@ function Pricing() {
   // Design details for modal (sample data - in production this would come from Firebase)
   const designDetails = {
     flowerType: language === 'en' ? 'Fresh Roses & Orchids' : 'ورود طازجة واوركيد',
-    stageSize: '4m x 3m',
-    setupDuration: language === 'en' ? '6-8 hours' : '٦-٨ ساعات',
-    breakdown: [
-      { name: language === 'en' ? 'Decoration Setup' : ' setup الديكور', price: selectedDesign?.price || 35000 },
-      { name: language === 'en' ? 'Flowers & Arrangements' : 'الورود والترتيبات', price: 8000 },
-      { name: language === 'en' ? 'Lighting & Effects' : 'الإضاءة والمؤثرات', price: 5000 },
-      { name: language === 'en' ? 'Labor & Setup' : 'التركيب والعمالة', price: 3000 }
-    ]
+    setupDuration: language === 'en' ? '3-4 hours' : '3-4 ساعات',
   };
 
   return (
@@ -684,10 +690,7 @@ function Pricing() {
                     <span className="detail-label">{language === 'en' ? 'Flower Type' : 'نوع الورود'}</span>
                     <span className="detail-value">{designDetails.flowerType}</span>
                   </div>
-                  <div className="detail-card">
-                    <span className="detail-label">{language === 'en' ? 'Stage Size' : 'حجم الستيل'}</span>
-                    <span className="detail-value">{designDetails.stageSize}</span>
-                  </div>
+
                   <div className="detail-card">
                     <span className="detail-label">{language === 'en' ? 'Setup Duration' : 'مدة التركيب'}</span>
                     <span className="detail-value">{designDetails.setupDuration}</span>

@@ -148,7 +148,7 @@ const Rentals = () => {
 
   const categories = [
     { id: 'mirrors-flowers', name: 'مرايا بورد' },
-    { id: 'mirrors', name: 'مرايا' },
+    { id: 'mirrors', name: 'تربيزات' },
     { id: 'normalChairs', name: 'كراسي عادية' },
     { id: 'caneChairs', name: 'كرسي كانيه' }
   ];

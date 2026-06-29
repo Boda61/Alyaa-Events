@@ -6,11 +6,9 @@ import {
   Trash,
   X,
   Upload,
-  Image,
-  CaretRight,
-  CaretLeft
+  Image
 } from 'phosphor-react';
-import { portfolioService, uploadImageNoDoc } from '../../firebase/service';
+import { portfolioService, uploadToCloudinary } from '../../firebase/service';
 
 const Portfolio = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,14 +18,13 @@ const Portfolio = () => {
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [uploadingImages, setUploadingImages] = useState({ uploading: false });
 
   const [formData, setFormData] = useState({
-    titleEn: '',
     titleAr: '',
-    descriptionEn: '',
-    descriptionAr: '',
-    price: '',
-    images: [],
+    titleEn: '',
+    imageUrl: '',
+    publicId: '',
     order: 0
   });
 
@@ -47,102 +44,87 @@ const Portfolio = () => {
 
   const openAddModal = () => {
     setFormData({
-      titleEn: '',
       titleAr: '',
-      descriptionEn: '',
-      descriptionAr: '',
-      price: '',
-      images: [],
+      titleEn: '',
+      imageUrl: '',
+      publicId: '',
       order: portfolio.length
     });
     setEditingId(null);
     setShowModal(true);
     setError('');
+    setUploadingImages({ uploading: false });
   };
 
   const openEditModal = (item) => {
     setFormData({
-      titleEn: item.titleEn || '',
       titleAr: item.titleAr || '',
-      descriptionEn: item.descriptionEn || '',
-      descriptionAr: item.descriptionAr || '',
-      price: item.price || '',
-      images: item.images || [],
+      titleEn: item.titleEn || '',
+      imageUrl: item.imageUrl || '',
+      publicId: item.publicId || '',
       order: item.order || 0
     });
     setEditingId(item.id);
     setShowModal(true);
     setError('');
-  };
-
-  // Convert image to base64
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    setUploadingImages({ uploading: false });
   };
 
   const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('يرجى اختيار صورة صحيحة (JPEG, PNG, WebP, GIF)');
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('حجم الصورة يجب أن يكون أقل من 10 ميجابايت');
+      return;
+    }
 
     try {
-      setSaving(true);
-      for (const file of files) {
-        const base64 = await convertToBase64(file);
-        setFormData(prev => ({ ...prev, images: [...prev.images, base64] }));
-      }
+      setUploadingImages({ uploading: true });
+      const result = await uploadToCloudinary(file, 'portfolio');
+      setFormData(prev => ({ ...prev, imageUrl: result.imageUrl, publicId: result.publicId }));
     } catch (err) {
-      setError('حدث خطأ في معالجة الصورة');
+      setError('حدث خطأ في رفع الصورة');
       console.error(err);
     } finally {
-      setSaving(false);
+      setUploadingImages({ uploading: false });
     }
   };
 
-  const handleImageUrlAdd = () => {
-    const urlInput = document.getElementById('imageUrlInput');
-    const url = urlInput?.value?.trim();
-    if (!url) return;
-
-    if (url.startsWith('http')) {
-      setFormData(prev => ({ ...prev, images: [...prev.images, url] }));
-      urlInput.value = '';
-    } else {
-      setError('يرجى إدخال رابط صحيح');
-    }
-  };
-
-  const removeImage = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+  const removeImage = () => {
+    setFormData(prev => ({ ...prev, imageUrl: '', publicId: '' }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSaving(true);
 
+    if (!formData.imageUrl) {
+      setError('يرجى رفع صورة');
+      return;
+    }
+
+    setSaving(true);
     try {
-      const projectData = {
-        titleEn: formData.titleEn,
+      const itemData = {
         titleAr: formData.titleAr,
-        descriptionEn: formData.descriptionEn,
-        descriptionAr: formData.descriptionAr,
-        price: formData.price,
-        images: formData.images,
+        titleEn: formData.titleEn,
+        imageUrl: formData.imageUrl,
+        publicId: formData.publicId,
         order: parseInt(formData.order) || 0
       };
 
       if (editingId) {
-        await portfolioService.update(editingId, projectData);
+        await portfolioService.update(editingId, itemData);
       } else {
-        await portfolioService.add(projectData);
+        await portfolioService.add(itemData);
       }
 
       const data = await portfolioService.getAll();
@@ -166,7 +148,7 @@ const Portfolio = () => {
       const data = await portfolioService.getAll();
       setPortfolio(data);
     } catch (err) {
-      console.error('Error deleting project:', err);
+      console.error('Error deleting:', err);
     } finally {
       setLoading(false);
     }
@@ -206,25 +188,16 @@ const Portfolio = () => {
           {portfolio.map((item) => (
             <div key={item.id} className="portfolio-card">
               <div className="portfolio-images">
-                <div className="image-slider">
-                  {item.images && item.images.length > 0 ? (
-                    <img src={item.images[0]} alt={item.titleEn} />
-                  ) : (
-                    <div className="no-image">
-                      <Image size={32} />
-                    </div>
-                  )}
-                  {item.images && item.images.length > 1 && (
-                    <div className="image-count">
-                      +{item.images.length - 1}
-                    </div>
-                  )}
-                </div>
+                {item.imageUrl ? (
+                  <img src={item.imageUrl} alt={item.titleEn} loading="lazy" />
+                ) : (
+                  <div className="no-image">
+                    <Image size={32} />
+                  </div>
+                )}
               </div>
               <div className="portfolio-info">
                 <h3>{item.titleAr || item.titleEn}</h3>
-                <p>{item.descriptionAr || item.descriptionEn}</p>
-                {item.price && <span className="portfolio-price">{item.price}</span>}
               </div>
               <div className="portfolio-actions">
                 <button className="btn-edit" onClick={() => openEditModal(item)}>
@@ -239,7 +212,6 @@ const Portfolio = () => {
         </div>
       )}
 
-      {/* Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -255,113 +227,63 @@ const Portfolio = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>العنوان بالإنجليزية</label>
-                  <input
-                    type="text"
-                    value={formData.titleEn}
-                    onChange={e => setFormData(prev => ({ ...prev, titleEn: e.target.value }))}
-                    placeholder="Luxury Wedding"
-                    required
-                  />
-                </div>
-                <div className="form-group">
                   <label>العنوان بالعربية</label>
                   <input
                     type="text"
                     value={formData.titleAr}
                     onChange={e => setFormData(prev => ({ ...prev, titleAr: e.target.value }))}
                     placeholder="زفاف فاخر"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>الوصف بالإنجليزية</label>
-                  <textarea
-                    value={formData.descriptionEn}
-                    onChange={e => setFormData(prev => ({ ...prev, descriptionEn: e.target.value }))}
-                    placeholder="Project description..."
-                    rows={3}
                   />
                 </div>
                 <div className="form-group">
-                  <label>الوصف بالعربية</label>
-                  <textarea
-                    value={formData.descriptionAr}
-                    onChange={e => setFormData(prev => ({ ...prev, descriptionAr: e.target.value }))}
-                    placeholder="وصف المشروع..."
-                    rows={3}
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>السعر</label>
+                  <label>العنوان بالإنجليزية</label>
                   <input
                     type="text"
-                    value={formData.price}
-                    onChange={e => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                    placeholder="$5000"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>الترتيب</label>
-                  <input
-                    type="number"
-                    value={formData.order}
-                    onChange={e => setFormData(prev => ({ ...prev, order: e.target.value }))}
-                    placeholder="0"
+                    value={formData.titleEn}
+                    onChange={e => setFormData(prev => ({ ...prev, titleEn: e.target.value }))}
+                    placeholder="Luxury Wedding"
                   />
                 </div>
               </div>
 
               <div className="form-group">
-                <label>الصور (أضف رابط الصورة)</label>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                  <input
-                    type="url"
-                    id="imageUrlInput"
-                    placeholder="https://example.com/image.jpg"
-                    style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '2px solid #ddd' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleImageUrlAdd}
-                    style={{ padding: '10px 20px', background: '#5B3E2B', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-                  >
-                    إضافة
-                  </button>
-                </div>
-                <p style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
-                  ملاحظة: يمكن رفع صورة من جهازك أو استخدام رابط.
-                </p>
-                <div className="images-grid">
-                  {formData.images.map((img, index) => (
-                    <div key={index} className="image-preview">
-                      <img src={img} alt={`Image ${index + 1}`} />
-                      <button
-                        type="button"
-                        className="remove-image"
-                        onClick={() => removeImage(index)}
-                      >
+                <label>الترتيب</label>
+                <input
+                  type="number"
+                  value={formData.order}
+                  onChange={e => setFormData(prev => ({ ...prev, order: e.target.value }))}
+                  placeholder="0"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>الصورة</label>
+                <div className="image-upload-area">
+                  {formData.imageUrl ? (
+                    <div className="image-preview">
+                      <img src={formData.imageUrl} alt="Preview" />
+                      <button type="button" className="remove-image" onClick={removeImage}>
                         <X size={16} />
                       </button>
                     </div>
-                  ))}
-                  <label className="upload-label">
-                    <Upload size={24} />
-                    <span>رفع صورة</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageUpload}
-                      hidden
-                    />
-                  </label>
+                  ) : (
+                    <label className="upload-label">
+                      <Upload size={32} />
+                      <span>اختر صورة</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        hidden
+                      />
+                    </label>
+                  )}
+                  {uploadingImages.uploading && (
+                    <div className="image-preview loading-placeholder">
+                      <div className="loading-spinner-small"></div>
+                      <span>جاري الرفع...</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -417,14 +339,14 @@ const Portfolio = () => {
           background: #5B3E2B;
           color: white;
           border: none;
-          border-radius: 10px;
-          font-size: 14px;
+          border-radius: 8px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          font-size: 14px;
+          transition: background 0.2s;
         }
 
         .btn-primary:hover {
-          background: #4a3224;
+          background: #4A3225;
         }
 
         .btn-primary:disabled {
@@ -432,49 +354,58 @@ const Portfolio = () => {
           cursor: not-allowed;
         }
 
+        .btn-secondary {
+          padding: 12px 24px;
+          background: #f5f5f5;
+          color: #333;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+
+        .btn-secondary:hover {
+          background: #eee;
+        }
+
         .empty-state {
           text-align: center;
-          padding: 60px;
-          background: white;
-          border-radius: 16px;
+          padding: 60px 20px;
+          background: #fafafa;
+          border-radius: 12px;
         }
 
         .empty-state p {
-          color: rgba(91, 62, 43, 0.6);
+          color: rgba(91, 62, 43, 0.7);
           margin-bottom: 20px;
         }
 
         .portfolio-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 20px;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 24px;
         }
 
         .portfolio-card {
           background: white;
-          border-radius: 16px;
+          border-radius: 12px;
           overflow: hidden;
-          box-shadow: 0 4px 20px rgba(93, 62, 43, 0.08);
-          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+          transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .portfolio-card:hover {
           transform: translateY(-4px);
-          box-shadow: 0 8px 30px rgba(93, 62, 43, 0.12);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
         }
 
         .portfolio-images {
           aspect-ratio: 4/3;
-          background: #F4D9CC;
+          background: #f5f5f5;
+          overflow: hidden;
         }
 
-        .image-slider {
-          width: 100%;
-          height: 100%;
-          position: relative;
-        }
-
-        .image-slider img {
+        .portfolio-images img {
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -486,86 +417,56 @@ const Portfolio = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          color: rgba(91, 62, 43, 0.4);
-        }
-
-        .image-count {
-          position: absolute;
-          bottom: 8px;
-          right: 8px;
-          padding: 4px 10px;
-          background: rgba(0, 0, 0, 0.6);
-          color: white;
-          border-radius: 20px;
-          font-size: 12px;
+          color: #ccc;
         }
 
         .portfolio-info {
-          padding: 20px;
+          padding: 16px;
         }
 
         .portfolio-info h3 {
           font-family: 'Cormorant Garamond', serif;
-          font-size: 20px;
+          font-size: 18px;
           color: #5B3E2B;
-          margin-bottom: 8px;
-        }
-
-        .portfolio-info p {
-          font-size: 14px;
-          color: rgba(91, 62, 43, 0.7);
-          line-height: 1.6;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .portfolio-price {
-          display: inline-block;
-          margin-top: 12px;
-          padding: 6px 12px;
-          background: #FDF6EF;
-          border-radius: 6px;
-          font-size: 13px;
-          color: #B7AE84;
+          margin: 0;
         }
 
         .portfolio-actions {
           display: flex;
           gap: 8px;
-          padding: 0 20px 20px;
+          padding: 0 16px 16px;
         }
 
-        .btn-edit, .btn-delete {
-          padding: 10px;
+        .portfolio-actions button {
+          width: 36px;
+          height: 36px;
           border: none;
           border-radius: 8px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.2s;
         }
 
         .btn-edit {
-          background: #FDF6EF;
-          color: #5B3E2B;
+          background: #e8f5e9;
+          color: #2e7d32;
         }
 
         .btn-edit:hover {
-          background: #5B3E2B;
-          color: white;
+          background: #c8e6c9;
         }
 
         .btn-delete {
-          background: #fee;
-          color: #c00;
+          background: #ffebee;
+          color: #c62828;
         }
 
         .btn-delete:hover {
-          background: #c00;
-          color: white;
+          background: #ffcdd2;
         }
 
-        /* Modal */
         .modal-overlay {
           position: fixed;
           top: 0;
@@ -576,15 +477,14 @@ const Portfolio = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 2000;
-          padding: 20px;
+          z-index: 1000;
         }
 
         .modal {
           background: white;
-          border-radius: 20px;
+          border-radius: 16px;
           width: 100%;
-          max-width: 700px;
+          max-width: 450px;
           max-height: 90vh;
           overflow-y: auto;
         }
@@ -593,21 +493,27 @@ const Portfolio = () => {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 24px;
-          border-bottom: 1px solid #F4D9CC;
+          padding: 20px 24px;
+          border-bottom: 1px solid #eee;
         }
 
         .modal-header h2 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 24px;
           color: #5B3E2B;
+          margin: 0;
         }
 
         .modal-close {
           background: none;
           border: none;
           cursor: pointer;
-          color: rgba(91, 62, 43, 0.6);
+          color: #999;
+          padding: 4px;
+        }
+
+        .modal-close:hover {
+          color: #333;
         }
 
         .modal-form {
@@ -615,11 +521,11 @@ const Portfolio = () => {
         }
 
         .error-message {
-          background: #fee;
-          color: #c00;
+          background: #ffebee;
+          color: #c62828;
           padding: 12px;
           border-radius: 8px;
-          margin-bottom: 20px;
+          margin-bottom: 16px;
           font-size: 14px;
         }
 
@@ -630,135 +536,125 @@ const Portfolio = () => {
         }
 
         .form-group {
-          margin-bottom: 20px;
+          margin-bottom: 16px;
         }
 
         .form-group label {
           display: block;
           margin-bottom: 8px;
-          font-size: 14px;
           font-weight: 500;
-          color: #5B3E2B;
+          color: #333;
+          font-size: 14px;
         }
 
-        .form-group input,
-        .form-group textarea {
+        .form-group input {
           width: 100%;
-          padding: 12px;
-          border: 2px solid #F4D9CC;
-          border-radius: 10px;
-          font-size: 15px;
-          transition: all 0.3s ease;
-          background: #FDF6EF;
+          padding: 10px 12px;
+          border: 2px solid #ddd;
+          border-radius: 8px;
+          font-size: 14px;
+          transition: border-color 0.2s;
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus {
+        .form-group input:focus {
           outline: none;
-          border-color: #B7AE84;
-          background: white;
+          border-color: #5B3E2B;
         }
 
-        .form-group textarea {
-          resize: vertical;
-          min-height: 80px;
+        .image-upload-area {
+          border: 2px dashed #ddd;
+          border-radius: 12px;
+          padding: 24px;
+          text-align: center;
+          min-height: 150px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .images-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 12px;
-        }
-
-        .images-grid .image-preview {
+        .image-preview {
           position: relative;
-          aspect-ratio: 1;
-          border-radius: 10px;
-          overflow: hidden;
-        }
-
-        .images-grid .image-preview img {
           width: 100%;
-          height: 100%;
-          object-fit: cover;
+          max-width: 200px;
+          margin: 0 auto;
         }
 
-        .images-grid .remove-image {
+        .image-preview img {
+          width: 100%;
+          border-radius: 8px;
+        }
+
+        .remove-image {
           position: absolute;
-          top: 4px;
-          right: 4px;
+          top: -8px;
+          right: -8px;
           width: 24px;
           height: 24px;
-          background: rgba(0, 0, 0, 0.6);
+          background: #c62828;
+          color: white;
           border: none;
           border-radius: 50%;
-          color: white;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
-        .images-grid .upload-label {
-          aspect-ratio: 1;
+        .upload-label {
+          cursor: pointer;
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
           gap: 8px;
-          background: #FDF6EF;
-          border: 2px dashed #F4D9CC;
-          border-radius: 10px;
-          cursor: pointer;
-          color: rgba(91, 62, 43, 0.6);
-          font-size: 12px;
+          color: #999;
         }
 
-        .modal-actions {
-          display: flex;
-          gap: 12px;
-          justify-content: flex-end;
-          margin-top: 24px;
-        }
-
-        .btn-secondary {
-          padding: 12px 24px;
-          background: transparent;
-          color: #5B3E2B;
-          border: 2px solid #F4D9CC;
-          border-radius: 10px;
+        .upload-label span {
           font-size: 14px;
-          cursor: pointer;
         }
 
-        .admin-loading {
+        .loading-placeholder {
           display: flex;
-          justify-content: center;
+          flex-direction: column;
           align-items: center;
-          min-height: 400px;
+          gap: 8px;
+          color: #5B3E2B;
         }
 
-        .loading-spinner {
-          width: 40px;
-          height: 40px;
-          border: 4px solid #F4D9CC;
+        .loading-spinner-small {
+          width: 24px;
+          height: 24px;
+          border: 3px solid #eee;
           border-top-color: #5B3E2B;
           border-radius: 50%;
-          animation: spin 1s linear infinite;
+          animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
 
-        @media (max-width: 768px) {
-          .form-row {
-            grid-template-columns: 1fr;
-          }
+        .modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 24px;
+        }
 
-          .images-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
+        .admin-loading {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 400px;
+        }
+
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 3px solid #eee;
+          border-top-color: #5B3E2B;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
         }
       `}</style>
     </div>
