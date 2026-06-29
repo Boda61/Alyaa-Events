@@ -3030,6 +3030,7 @@ html[lang="ar"] .hero-title {
 .footer-logo {
   width: 130px;
   margin-bottom: 24px;
+  border-radius: 50%;
 }
 
 .footer-about p {
