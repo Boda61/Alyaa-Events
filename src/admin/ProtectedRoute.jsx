@@ -1,4 +1,5 @@
 import { useState, useEffect, createContext, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase/config';
 import {
   signInWithEmailAndPassword,
@@ -60,6 +61,7 @@ export const AuthProvider = ({ children }) => {
 // Protected Route Component
 export const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -76,7 +78,7 @@ export const ProtectedRoute = ({ children }) => {
   }
 
   if (!user) {
-    window.location.href = '/admin';
+    navigate('/admin', { replace: true });
     return null;
   }
 
@@ -86,11 +88,12 @@ export const ProtectedRoute = ({ children }) => {
 // Admin Layout Wrapper
 export const AdminLayout = ({ children }) => {
   const { logout, user } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.href = '/admin';
+      navigate('/admin', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
     }

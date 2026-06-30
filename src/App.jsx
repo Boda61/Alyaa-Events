@@ -234,7 +234,7 @@ function Hero() {
           <button className="btn btn-primary" onClick={() => scrollTo('planner')}>{t('hero.planYourEvent')}</button>
         </motion.div>
       </div>
-      <div className="hero-scroll" onClick={() => scrollTo('portfolio')}>
+      <div className="hero-scroll" onClick={() => scrollTo('planner')}>
         <span>{t('hero.scroll')}</span>
         <span>↓</span>
       </div>
@@ -2087,6 +2087,7 @@ function App() {
     <LanguageProvider>
       <Navigation />
       <Hero />
+      <EventPlanner />
       <Gallery />
       <About />
       <Services />
@@ -2094,7 +2095,6 @@ function App() {
       <RentalPrices />
       <MirrorGallery />
       <RentalGallery />
-      <EventPlanner />
       <Process />
       <Testimonials />
       <BeforeAfter />
