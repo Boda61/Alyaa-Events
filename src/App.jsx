@@ -194,7 +194,7 @@ function Hero() {
         preload="auto"
         style={{ background: 'transparent', display: 'block' }}
       >
-        <source src="/picture/hero video.mp4" type="video/mp4" />
+        <source src="/picture/hero video 2.mp4" type="video/mp4" />
       </video>
       <div className="hero-overlay"></div>
       <div className="hero-content">
@@ -1175,7 +1175,8 @@ function EventPlanner() {
     notes: '',
     venueType: '',
     venueLocation: '',
-    venueNotes: ''
+    venueNotes: '',
+    eventDay: ''
   });
 
   const updateFormData = (field, value) => {
@@ -1269,6 +1270,9 @@ function EventPlanner() {
     if (formData.venueType) {
       message += `نوع المكان: ${getVenueTypeName(formData.venueType)}\n`;
     }
+    if (formData.eventDay) {
+      message += `يوم الحفله: ${formData.eventDay}\n`;
+    }
     if (formData.venueLocation) {
       message += `موقع المكان: ${formData.venueLocation}\n`;
     }
@@ -1288,7 +1292,7 @@ function EventPlanner() {
       case 2: return true; // guestCount is optional
       case 3: return formData.colors && formData.colors.length >= 1;
       case 4: return formData.budget;
-      case 5: return formData.venueType;
+      case 5: return formData.venueType && formData.eventDay;
       case 6: return true; // image is optional
       default: return true;
     }
@@ -1329,11 +1333,11 @@ function EventPlanner() {
   ];
 
   const budgetRangesList = [
-    { id: '50k', name: '2500 - 8500 EGP', range: language === 'en' ? 'Budget-friendly' : 'قرايه فاتحه او خطوبه(in door)' },
-    { id: '150k', name: '15,000 - 25,000 EGP', range: language === 'en' ? 'Mid-range' : 'كتب كتاب (out door)' },
-    { id: '250k', name: '3000 - 8000 EGP', range: language === 'en' ? 'Premium' : 'كتب كتاب(in door)' },
-    { id: '500k', name: '15,000 - 30,000 EGP', range: language === 'en' ? 'Luxury' : 'خطوبه (out door)' },
-    { id: 'custom', name: '70,000 - 150,000 EGP', range: language === 'en' ? 'Ultra-luxury' : 'فرح' },
+    { id: '50k', name: '2500 - 8500 EGP', range: language === 'en' ? 'Opening reading or engagement (in door)' : 'قرايه فاتحه او خطوبه(in door)' },
+    { id: '150k', name: '15,000 - 25,000 EGP', range: language === 'en' ? 'Outdoor marriage contract ceremony' : 'كتب كتاب (out door)' },
+    { id: '250k', name: '3000 - 8000 EGP', range: language === 'en' ? 'Indoor marriage contract signing ceremony' : 'كتب كتاب(in door)' },
+    { id: '500k', name: '15,000 - 30,000 EGP', range: language === 'en' ? 'Outdoor engagement party' : 'خطوبه (out door)' },
+    { id: 'custom', name: '70,000 - 150,000 EGP', range: language === 'en' ? 'engagement' : 'فرح' },
   ];
 
   const venueTypesList = [
@@ -1539,6 +1543,25 @@ function EventPlanner() {
                     {venueTypesList.map((venue) => (
                       <option key={venue.id} value={venue.id}>{venue.name}</option>
                     ))}
+                  </select>
+                </div>
+
+                {/* Event Day */}
+                <div className="form-group">
+                  <label className="form-label">{language === 'en' ? 'Event Day *' : 'يوم الحفله *'}</label>
+                  <select
+                    className="form-select"
+                    value={formData.eventDay}
+                    onChange={(e) => updateFormData('eventDay', e.target.value)}
+                  >
+                    <option value="">{language === 'en' ? 'Select day' : 'اختر اليوم'}</option>
+                    <option value="الجمعه">{language === 'en' ? 'Friday' : 'الجمعه'}</option>
+                    <option value="السبت">{language === 'en' ? 'Saturday' : 'السبت'}</option>
+                    <option value="الاحد">{language === 'en' ? 'Sunday' : 'الاحد'}</option>
+                    <option value="الاثنين">{language === 'en' ? 'Monday' : 'الاثنين'}</option>
+                    <option value="الثلاثاء">{language === 'en' ? 'Tuesday' : 'الثلاثاء'}</option>
+                    <option value="الاربعاء">{language === 'en' ? 'Wednesday' : 'الاربعاء'}</option>
+                    <option value="الخميس">{language === 'en' ? 'Thursday' : 'الخميس'}</option>
                   </select>
                 </div>
 
@@ -2088,10 +2111,10 @@ function App() {
       <Navigation />
       <Hero />
       <EventPlanner />
+      <Pricing />
       <Gallery />
       <About />
       <Services />
-      <Pricing />
       <RentalPrices />
       <MirrorGallery />
       <RentalGallery />

@@ -1205,9 +1205,9 @@ html[lang="ar"] .hero-title {
 
 @media (max-width: 639px) {
   .designs-grid {
-    grid-template-columns: 1fr;
-    width: 100%;
-    max-width: 100%;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 12px;
   }
 }
 
@@ -1295,6 +1295,33 @@ html[lang="ar"] .hero-title {
 .view-details-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(183, 174, 132, 0.6);
+}
+
+/* Mobile styles for design cards side by side */
+@media (max-width: 639px) {
+  .design-card {
+    border-radius: 16px;
+  }
+
+  .design-info {
+    padding: 12px 14px 16px;
+  }
+
+  .design-price {
+    font-size: 18px;
+    margin-bottom: 2px;
+  }
+
+  .price-label {
+    font-size: 10px;
+    margin-bottom: 10px;
+  }
+
+  .view-details-btn {
+    padding: 8px 16px;
+    font-size: 11px;
+    border-radius: 50px;
+  }
 }
 
 /* Modal Styles */

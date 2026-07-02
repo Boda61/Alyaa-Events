@@ -1,0 +1,242 @@
+/* Hero Effects Layer Styles */
+
+.hero-effects {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Canvas for particles */
+.hero-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 1s ease;
+}
+
+/* Volumetric light rays */
+.hero-volumetric {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hero-light-ray {
+  position: absolute;
+  top: -50%;
+  width: 300px;
+  height: 200%;
+  background: linear-gradient(
+    180deg,
+    rgba(214, 181, 107, 0.4) 0%,
+    rgba(214, 181, 107, 0.1) 50%,
+    transparent 100%
+  );
+  transform-origin: top center;
+  filter: blur(40px);
+  transition: opacity 1.5s ease;
+}
+
+.ray-1 {
+  left: 10%;
+  transform: rotate(-15deg);
+  animation: rayFloat1 20s ease-in-out infinite;
+}
+
+.ray-2 {
+  left: 40%;
+  transform: rotate(5deg);
+  animation: rayFloat2 25s ease-in-out infinite;
+}
+
+.ray-3 {
+  left: 70%;
+  transform: rotate(20deg);
+  animation: rayFloat3 22s ease-in-out infinite;
+}
+
+@keyframes rayFloat1 {
+  0%, 100% { transform: rotate(-15deg) translateX(0); }
+  50% { transform: rotate(-12deg) translateX(30px); }
+}
+
+@keyframes rayFloat2 {
+  0%, 100% { transform: rotate(5deg) translateX(0); }
+  50% { transform: rotate(8deg) translateX(-20px); }
+}
+
+@keyframes rayFloat3 {
+  0%, 100% { transform: rotate(20deg) translateX(0); }
+  50% { transform: rotate(17deg) translateX(25px); }
+}
+
+/* Fog layers */
+.hero-fog {
+  position: absolute;
+  bottom: 0;
+  left: -10%;
+  width: 120%;
+  height: 60%;
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 15, 0.8) 0%,
+    rgba(15, 15, 15, 0.4) 30%,
+    transparent 100%
+  );
+  animation: fogDrift 30s ease-in-out infinite;
+  transition: opacity 2s ease;
+}
+
+.hero-fog-2 {
+  bottom: auto;
+  top: 0;
+  height: 40%;
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 15, 15, 0.6) 0%,
+    rgba(15, 15, 15, 0.2) 50%,
+    transparent 100%
+  );
+  animation: fogDrift2 35s ease-in-out infinite;
+  animation-delay: -10s;
+}
+
+@keyframes fogDrift {
+  0%, 100% { transform: translateX(0) scale(1); }
+  50% { transform: translateX(5%) scale(1.05); }
+}
+
+@keyframes fogDrift2 {
+  0%, 100% { transform: translateX(0) scale(1); }
+  50% { transform: translateX(-5%) scale(1.03); }
+}
+
+/* Golden ambient glow */
+.hero-ambient-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(214, 181, 107, 0.15) 0%,
+    rgba(214, 181, 107, 0.05) 30%,
+    transparent 70%
+  );
+  transform: translate(-50%, -50%);
+  transition: opacity 2s ease;
+  animation: ambientPulse 8s ease-in-out infinite;
+}
+
+@keyframes ambientPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+}
+
+/* Mouse-reactive spotlight */
+.hero-spotlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: opacity 1s ease;
+}
+
+/* Floating golden orbs */
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: orbFloat 15s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(
+    circle,
+    rgba(214, 181, 107, 0.3) 0%,
+    transparent 70%
+  );
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    circle,
+    rgba(245, 239, 230, 0.15) 0%,
+    transparent 70%
+  );
+  bottom: 30%;
+  right: 15%;
+  animation-delay: -5s;
+}
+
+@keyframes orbFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+  50% {
+    transform: translate(-20px, 30px) scale(0.95);
+  }
+  75% {
+    transform: translate(-30px, -10px) scale(1.02);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .hero-light-ray {
+    width: 200px;
+  }
+
+  .orb-1 {
+    width: 300px;
+    height: 300px;
+  }
+
+  .orb-2 {
+    width: 200px;
+    height: 200px;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-light-ray {
+    width: 150px;
+    filter: blur(30px);
+  }
+
+  .hero-fog {
+    height: 50%;
+  }
+
+  .hero-fog-2 {
+    height: 30%;
+  }
+
+  .orb-1,
+  .orb-2 {
+    display: none;
+  }
+}
