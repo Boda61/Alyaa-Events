@@ -1,0 +1,3 @@
+- [ ] Track website visits in `src/main.jsx` (once per page load via `sessionStorage`)
+- [ ] Add analytics section to `src/admin/pages/AdminDashboard.jsx` showing total visits
+- [ ] Verify production build (`npm run build`)

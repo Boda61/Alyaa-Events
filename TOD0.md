@@ -1,0 +1,3 @@
+- [ ] Track website visits on every page load (once per page load, no duplicates)
+- [ ] Admin Dashboard: fetch `analytics` collection, filter `type === 'visit'`, show total visits
+- [ ] Production-safety checks: guard env, avoid multiple writes, handle empty state gracefully

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { analytics } from './utils/analytics';
+import { db } from './firebase/config';
+import { collection, addDoc } from 'firebase/firestore';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { LanguageProvider, useLanguage } from './i18n';
 import { servicesService, portfolioService, testimonialsService, settingsService, rentalItemsService, decorationService } from './firebase/service';
@@ -1205,6 +1207,25 @@ function RentalGallery() {
 // Event Planner Section
 function EventPlanner() {
   const [step, setStep] = useState(1);
+
+  const trackEventType = async (eventType) => {
+    try {
+      if (typeof window === 'undefined' || !eventType) return;
+
+      const STORAGE_KEY = `event_type_used_${eventType}`;
+      if (sessionStorage.getItem(STORAGE_KEY)) return;
+
+      sessionStorage.setItem(STORAGE_KEY, '1');
+
+      await addDoc(collection(db, 'analytics'), {
+        type: 'event_type_used',
+        eventType,
+        timestamp: Date.now(),
+      });
+    } catch {
+      // keep UI usable
+    }
+  };
   const [uploadingImages, setUploadingImages] = useState(false);
   const [formDataImages, setFormDataImages] = useState([]);
   const [formData, setFormData] = useState({
@@ -1445,7 +1466,24 @@ function EventPlanner() {
                     <div
                       key={type.id}
                       className={`option-card ${formData.eventType === type.id ? 'selected' : ''}`}
-                      onClick={() => updateFormData('eventType', type.id)}
+                      onClick={() => {
+                        updateFormData('eventType', type.id);
+
+                        const mapped =
+                          type.id === 'wedding'
+                            ? 'Wedding'
+                            : type.id === 'engagement'
+                              ? 'Engagement'
+                              : type.id === 'henna'
+                                ? 'Henna Night'
+                                : type.id === 'corporate'
+                                  ? 'Corporate'
+                                  : type.id === 'birthday'
+                                    ? 'Birthday'
+                                    : 'Other';
+
+                        trackEventType(mapped);
+                      }}
                     >
                       <h4>{type.name}</h4>
                       <p>{type.description}</p>
