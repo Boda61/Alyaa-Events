@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { analytics } from './utils/analytics';
 
 const translations = {
   en: {
@@ -324,13 +325,18 @@ export function LanguageProvider({ children }) {
 
 
   const toggleLanguage = () => {
+    const previousLanguage = language;
     const newLang = language === 'en' ? 'ar' : 'en';
+
     setLanguage(newLang);
     setIsRTL(newLang === 'ar');
     localStorage.setItem('alyaa-language', newLang);
 
     document.documentElement.lang = newLang;
     document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+
+    // GA4: language switch event
+    analytics.trackLanguageSwitch?.(newLang, previousLanguage);
   };
 
 

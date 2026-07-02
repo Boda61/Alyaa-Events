@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { useAuth } from './admin/ProtectedRoute';
+import PageViewTracker from './components/PageViewTracker';
 
 const AdminLogin = lazy(() => import('./admin/pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./admin/pages/AdminDashboard'));
@@ -49,6 +50,7 @@ const ProtectedRoute = ({ children }) => {
 const AdminRoutes = () => {
   return (
     <Suspense fallback={<LoadingFallback />}>
+      <PageViewTracker />
       <Routes>
         <Route path="/admin" element={<AdminLogin />} />
         <Route

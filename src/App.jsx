@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { analytics } from './utils/analytics';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { LanguageProvider, useLanguage } from './i18n';
 import { servicesService, portfolioService, testimonialsService, settingsService, rentalItemsService, decorationService } from './firebase/service';
@@ -115,7 +116,17 @@ function Navigation() {
             <li><a href="#services" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('services'); }}>{t('nav.services')}</a></li>
             <li><a href="#contact" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('contact'); }}>{t('nav.contact')}</a></li>
             <li><a href="#testimonials" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('testimonials'); }}>{language === 'en' ? 'Reviews' : 'آراء'}</a></li>
-            <li><button className="btn btn-secondary nav-cta" onClick={() => scrollTo('planner')}>{t('nav.planEvent')}</button></li>
+            <li>
+              <button
+                className="btn btn-secondary nav-cta"
+                onClick={() => {
+                  analytics.trackPlanEventClick();
+                  scrollTo('planner');
+                }}
+              >
+                {t('nav.planEvent')}
+              </button>
+            </li>
             <li>
               <a href="/admin" className="admin-link" title="لوحة التحكم" onClick={(e) => {
                 // Allow default link behavior
@@ -151,7 +162,16 @@ function Navigation() {
         <a href="#services" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('services'); setMenuOpen(false); }}>{t('nav.services')}</a>
         <a href="#testimonials" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('testimonials'); setMenuOpen(false); }}>{language === 'en' ? 'Reviews' : 'آراء'}</a>
         <a href="#contact" className="nav-link" onClick={(e) => { e.preventDefault(); scrollTo('contact'); setMenuOpen(false); }}>{t('nav.contact')}</a>
-        <button className="btn btn-primary" onClick={() => { scrollTo('planner'); setMenuOpen(false); }}>{t('nav.planEvent')}</button>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                analytics.trackPlanEventClick();
+                scrollTo('planner');
+                setMenuOpen(false);
+              }}
+            >
+              {t('nav.planEvent')}
+            </button>
         <a
           href="/admin"
           className="admin-link admin-link-mobile"
@@ -230,11 +250,33 @@ function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
         >
-          <button className="btn btn-outline" onClick={() => scrollTo('portfolio')}>{t('hero.viewPortfolio')}</button>
-          <button className="btn btn-primary" onClick={() => scrollTo('planner')}>{t('hero.planYourEvent')}</button>
+          <button
+            className="btn btn-outline"
+            onClick={() => {
+              analytics.trackViewPortfolioClick();
+              scrollTo('portfolio');
+            }}
+          >
+            {t('hero.viewPortfolio')}
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              analytics.trackPlanEventClick();
+              scrollTo('planner');
+            }}
+          >
+            {t('hero.planYourEvent')}
+          </button>
         </motion.div>
       </div>
-      <div className="hero-scroll" onClick={() => scrollTo('planner')}>
+      <div
+        className="hero-scroll"
+        onClick={() => {
+          analytics.trackPlanEventClick();
+          scrollTo('planner');
+        }}
+      >
         <span>{t('hero.scroll')}</span>
         <span>↓</span>
       </div>
@@ -1249,6 +1291,8 @@ function EventPlanner() {
   };
 
   const generateWhatsAppMessage = async () => {
+    analytics.trackFormSubmit('Event Planner');
+    analytics.trackWhatsAppClick('event_planner');
     let message = `✨ New Event Inquiry - Alyaa Events\n\n`;
 
     // Event details
@@ -2039,7 +2083,14 @@ function Contact() {
           <a href="https://www.instagram.com/alya_eventss?igsh=MTNrbG4yZGpqb2g4cg==" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Instagram">
             <InstagramLogo weight="duotone" />
           </a>
-          <a href="https://wa.me/201100496079" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="WhatsApp">
+          <a
+            href="https://wa.me/201100496079"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="social-link"
+            aria-label="WhatsApp"
+            onClick={() => analytics.trackWhatsAppClick('contact')}
+          >
             <WhatsappLogo weight="duotone" />
           </a>
           <a href="https://www.tiktok.com/@alya.events21?_r=1&_t=ZS-97GM4SM1ixl" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="TikTok">
