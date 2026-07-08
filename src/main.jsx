@@ -11,69 +11,48 @@ import { db } from './firebase/config'
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore'
 
 const projectId = import.meta.env.VITE_CLARITY_PROJECT_ID;
-
 if (typeof window !== "undefined" && projectId) {
   Clarity.init(projectId);
 }
 
-// Initialize Google Analytics
-initializeAnalytics()
+initializeAnalytics();
 
-// Track unique visit once per day (per browser session) to avoid refresh duplicates
+// Track unique visit once per session
 try {
-  const today = new Date().toDateString()
-  const VISIT_SESSION_KEY = `visit_${today}`
-
-  if (typeof window !== 'undefined' && !sessionStorage.getItem(VISIT_SESSION_KEY)) {
-    sessionStorage.setItem(VISIT_SESSION_KEY, '1')
-
-    const now = Date.now()
+  const today = new Date().toDateString();
+  const VISIT_SESSION_KEY = `visit_${today}`;
+  if (!sessionStorage.getItem(VISIT_SESSION_KEY)) {
+    sessionStorage.setItem(VISIT_SESSION_KEY, '1');
     addDoc(collection(db, 'analytics'), {
       type: 'visit',
-      timestamp: now,
+      timestamp: Date.now(),
       date: today,
-    }).catch(() => {
-      // ignore analytics write failures in production
-    })
+    }).catch(() => {});
   }
-} catch {
-  // ignore
-}
+} catch {}
 
-// Live Active Users tracking (unique per browser session)
+// Live Active Users tracking
 try {
-  const STORAGE_USER_ID_KEY = 'active_users_user_id'
+  const STORAGE_USER_ID_KEY = 'active_users_user_id';
   const userId =
-    typeof window !== 'undefined'
-      ? sessionStorage.getItem(STORAGE_USER_ID_KEY) || (crypto?.randomUUID?.() ?? `u_${Date.now()}_${Math.random().toString(16).slice(2)}`)
-      : null
+    sessionStorage.getItem(STORAGE_USER_ID_KEY) ||
+    (crypto?.randomUUID?.() ?? `u_${Date.now()}_${Math.random().toString(16).slice(2)}`);
 
-  if (typeof window !== 'undefined' && userId) {
-    if (!sessionStorage.getItem(STORAGE_USER_ID_KEY)) {
-      sessionStorage.setItem(STORAGE_USER_ID_KEY, userId)
-    }
-
-    const activeUserRef = doc(db, 'activeUsers', userId)
-
-    const writeLastSeen = () => {
-      setDoc(activeUserRef, { lastSeen: Date.now() }, { merge: true }).catch(() => {
-        // keep app usable even if tracking fails
-      })
-    }
-
-    // write immediately on load
-    writeLastSeen()
-
-    // update every 10 seconds
-    const intervalId = setInterval(writeLastSeen, 10000)
-
-    window.addEventListener('beforeunload', () => {
-      clearInterval(intervalId)
-    })
+  if (!sessionStorage.getItem(STORAGE_USER_ID_KEY)) {
+    sessionStorage.setItem(STORAGE_USER_ID_KEY, userId);
   }
-} catch {
-  // ignore
-}
+
+  const activeUserRef = doc(db, 'activeUsers', userId);
+  const writeLastSeen = () =>
+    setDoc(activeUserRef, { lastSeen: Date.now() }, { merge: true }).catch(() => {});
+
+  writeLastSeen();
+  const intervalId = setInterval(writeLastSeen, 10000);
+
+  const cleanup = () => clearInterval(intervalId);
+  window.addEventListener('beforeunload', cleanup, { once: true });
+  window.addEventListener('pagehide', cleanup, { once: true });
+} catch {}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -83,7 +62,7 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
-})
+});
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -95,4 +74,4 @@ createRoot(document.getElementById('root')).render(
       </QueryClientProvider>
     </BrowserRouter>
   </StrictMode>,
-)
+);

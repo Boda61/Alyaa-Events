@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { analytics } from './utils/analytics';
 
 const translations = {
@@ -324,37 +324,36 @@ export function LanguageProvider({ children }) {
   }, [language]);
 
 
-  const toggleLanguage = () => {
-    const previousLanguage = language;
-    const newLang = language === 'en' ? 'ar' : 'en';
+  const toggleLanguage = useCallback(() => {
+    setLanguage(prev => {
+      const newLang = prev === 'en' ? 'ar' : 'en';
+      setIsRTL(newLang === 'ar');
+      localStorage.setItem('alyaa-language', newLang);
+      document.documentElement.lang = newLang;
+      document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+      analytics.trackLanguageSwitch?.(newLang, prev);
+      return newLang;
+    });
+  }, []);
 
-    setLanguage(newLang);
-    setIsRTL(newLang === 'ar');
-    localStorage.setItem('alyaa-language', newLang);
-
-    document.documentElement.lang = newLang;
-    document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
-
-    // GA4: language switch event
-    analytics.trackLanguageSwitch?.(newLang, previousLanguage);
-  };
-
-
-  const t = (key) => {
+  const t = useCallback((key) => {
     const keys = key.split('.');
     let value = translations[language];
     for (const k of keys) {
       value = value?.[k];
     }
-
-    // If the key exists (including arrays/objects/false/0), return it.
     if (value !== undefined) return value;
     if (value === null) return null;
     return key;
-  };
+  }, [language]);
+
+  const contextValue = useMemo(
+    () => ({ language, toggleLanguage, t, isRTL }),
+    [language, toggleLanguage, t, isRTL]
+  );
 
   return (
-    <LanguageContext.Provider value={{ language, toggleLanguage, t, isRTL }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );

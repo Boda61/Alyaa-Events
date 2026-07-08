@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { analytics } from './utils/analytics';
 import { db } from './firebase/config';
 import { collection, addDoc } from 'firebase/firestore';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { LanguageProvider, useLanguage } from './i18n';
-import { servicesService, portfolioService, testimonialsService, settingsService, rentalItemsService, decorationService } from './firebase/service';
+import { servicesService, portfolioService, testimonialsService, rentalItemsService, decorationService } from './firebase/service';
 import {
   HouseSimple,
   Users,
@@ -17,13 +17,12 @@ import {
   MapPin,
   InstagramLogo,
   FacebookLogo,
-  WhatsappLogo,
-  PinterestLogo,
-  CaretRight
+  WhatsappLogo
 } from 'phosphor-react';
 import './App.css';
+import { cloudinaryUrl } from './utils/cloudinary';
 
-// Gallery Images - From local picture folder (fallback if Firebase empty)
+// Static data outside components — never recreated on render
 const localGalleryImages = [
   { id: 1, src: '/picture/design 1.jpeg', title: 'Royal Wedding', location: 'Grand Ballroom', titleAr: 'زفاف ملكي', locationAr: 'القاعة الكبيرة' },
   { id: 2, src: '/picture/design 2.jpeg', title: 'Garden Ceremony', location: 'Private Estate', titleAr: ' ceremony في الحديقة', locationAr: 'Estate خاص' },
@@ -36,7 +35,6 @@ const localGalleryImages = [
   { id: 9, src: '/picture/design 9.jpeg', title: 'Modern Setup', location: 'Garden', titleAr: 'إعداد حديث', locationAr: 'الحديقة' },
 ];
 
-// Default services (fallback)
 const defaultServicesList = [
   { nameEn: 'Weddings', nameAr: 'الأفراح', descriptionEn: 'Full-scale wedding decoration', descriptionAr: 'ديكور أفراح كامل', icon: 'flower' },
   { nameEn: 'Engagements', nameAr: 'الخطوبات', descriptionEn: 'Elegant engagement setups', descriptionAr: 'إعدادات خطوبة أنيقة', icon: 'heart' },
@@ -44,7 +42,6 @@ const defaultServicesList = [
   { nameEn: 'Special Celebrations', nameAr: 'احتفالات خاصة', descriptionEn: 'Custom celebrations', descriptionAr: 'احتفالات مخصصة', icon: 'party-horn' },
 ];
 
-// Instagram Images - From local picture folder
 const instagramImages = [
   '/picture/design 10.jpeg',
   '/picture/design 11.jpeg',
@@ -56,7 +53,58 @@ const instagramImages = [
   '/picture/Design 20.jpeg',
 ];
 
-// Animation variants
+const mirrorItemsData = [
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا و لوحه ترحيب.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا..جپع' },
+  { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 6.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/design 6.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 4.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 8.jpeg' },
+  { name: '  ', nameEn: '   ', image: '/picture/لوحه ترحيب 5.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور باب الشقه.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 9.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 3.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/design 7.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور باب شقه 3.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 7.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 8.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 3.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور باب الشقه 2.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 10.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 5.jpeg' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 6.jpeg' },
+];
+
+const rentalGalleryData = [
+  { name: 'كرسي مدفع ', nameEn: 'Cannon chair', image: '/picture/كراسي مدفع 2.jpeg' },
+  { name: ' كرسي اكليرك (ترابيزه اكليرك)', nameEn: 'Acrylic chair (acrylic table)', image: '/picture/كرسي اكليرك.jpeg' },
+  { name: ' كرسي خشب (ترابيزه خشب)', nameEn: 'Wooden chair (wooden table)', image: '/picture/كرسي خشب.jpeg' },
+  { name: ' كرسي خشب اكس', nameEn: 'Wooden Chair X', image: '/picture/كرسي خشب اكس .jpeg' },
+  { name: 'كرسي خشب', nameEn: 'Wooden Chair', image: '/picture/كرسي خشب 3 .jpeg' },
+  { name: 'ترابيزه زجزاج ', nameEn: 'Zigzag table', image: '/picture/ترابيزه زجزاج.jpeg' },
+  { name: 'كرسي مدفع (ترابيزه بيضاوي)', nameEn: 'Cannon Chair (Oval Table)', image: '/picture/كراسي مدفع 3.jpeg' },
+  { name: 'ورد ع السلم', nameEn: 'Roses on the Staircase', image: '/picture/ديكور السلم.jpeg' },
+  { name: 'ورد ع السلم', nameEn: 'Roses on the Staircase', image: '/picture/ديكور سلم 2.jpeg' },
+  { name: 'ورد ع السلم', nameEn: 'Roses on the Staircase', image: '/picture/ديكور سلم 3.jpeg' },
+];
+
+const setupOptions = [
+  { id: 'بدون كنبة', icon: '🛏️', label: 'بدون كنبة' },
+  { id: 'ب كنبة', icon: '🛏️✨', label: 'ب كنبة' },
+  { id: 'ب كراسي', icon: '🪑', label: 'ب كراسي' },
+  { id: 'بدون كراسي', icon: '🚫🪑', label: 'بدون كراسي' },
+];
+
+const transformationsData = [
+  { before: '/picture/before 6.jpeg', after: '/picture/after 6.jpeg' },
+  { before: '/picture/before 4.jpeg', after: '/picture/after 4.jpeg' },
+  { before: '/picture/before 1.jpeg', after: '/picture/after 1.jpeg' },
+  { before: '/picture/before 2.jpeg', after: '/picture/after 2.jpeg' },
+  { before: '/picture/before 5.jpeg', after: '/picture/after 5.jpeg' },
+  { before: '/picture/before 7.jpeg', after: '/picture/after 7.jpeg' },
+];
+
+// Animation variants — defined once at module level
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } }
@@ -67,8 +115,7 @@ const staggerContainer = {
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
 };
 
-// Counter Component
-function Counter({ end, duration = 2 }) {
+const Counter = memo(function Counter({ end, duration = 2 }) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
@@ -86,11 +133,11 @@ function Counter({ end, duration = 2 }) {
     requestAnimationFrame(step);
   }, [isInView, end, duration]);
 
-  return <span ref={ref}>{count}{end > 100 ? '+' : ''}</span>;
-}
+  return <span ref={ref}>{count}</span>;
+});
 
 // Navigation Component
-function Navigation() {
+const Navigation = memo(function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { t, language, toggleLanguage, isRTL } = useLanguage();
@@ -101,10 +148,10 @@ function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollTo = (id) => {
+  const scrollTo = useCallback((id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMenuOpen(false);
-  };
+  }, []);
 
   return (
     <>
@@ -196,14 +243,14 @@ function Navigation() {
       </button>
     </>
   );
-}
+});
 
 // Hero Section
-function Hero() {
+const Hero = memo(function Hero() {
   const { t } = useLanguage();
-  const scrollTo = (id) => {
+  const scrollTo = useCallback((id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   return (
     <section id="home" className="hero">
@@ -284,7 +331,7 @@ function Hero() {
       </div>
     </section>
   );
-}
+});
 
 // Gallery Section
 function Gallery() {
@@ -300,8 +347,8 @@ function Gallery() {
       // Handle both old format (images array) and new format (imageUrl)
       let imageSrc = '';
       if (item.imageUrl) {
-        // New format
-        imageSrc = item.imageUrl;
+        // New format — apply Cloudinary transforms for gallery card size (800px)
+        imageSrc = cloudinaryUrl(item.imageUrl, { width: 800 });
       } else if (item.images && item.images.length > 0) {
         // Old format
         const firstImage = item.images[0];
@@ -365,7 +412,7 @@ function Gallery() {
               className="gallery-item"
               onClick={() => openLightbox(image)}
             >
-              <img src={image.src} alt={language === 'ar' ? image.titleAr : image.title} loading="lazy" />
+              <img src={image.src} alt={language === 'ar' ? image.titleAr : image.title} loading="lazy" decoding="async" />
               <div className="gallery-overlay">
                 <div className="gallery-info">
                   <h4>{language === 'ar' ? image.titleAr : image.title}</h4>
@@ -392,7 +439,7 @@ function Gallery() {
             <button className="lightbox-close" onClick={() => setLightboxOpen(false)}>
               <X weight="bold" />
             </button>
-            <img src={selectedImage.src} alt={selectedImage.title} />
+            <img src={selectedImage.src} alt={selectedImage.title} decoding="async" />
             <div className="lightbox-info">
               <h3>{language === 'ar' ? selectedImage.titleAr : selectedImage.title}</h3>
               <p>{selectedImage.location}</p>
@@ -420,7 +467,7 @@ function About() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <img src="https://images.unsplash.com/photo-1529636798458-92182e662485?w=800" alt="Alyaa Events Team" loading="lazy" />
+            <img src="https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&auto=format&q=80" alt="Alyaa Events Team" loading="lazy" decoding="async" />
           </motion.div>
 
           <motion.div
@@ -574,32 +621,31 @@ function Pricing() {
     fetchDecorations();
   }, []);
 
-  // Get valid image URL with fallback
+  // Get valid image URL with fallback — Cloudinary URLs get f_auto,q_auto,w_800,c_limit
   const getValidImageUrl = (item, index) => {
     if (item.imageUrl && item.imageUrl.startsWith('http') && !item.imageUrl.startsWith('blob:')) {
-      return item.imageUrl;
+      return cloudinaryUrl(item.imageUrl, { width: 800 });
     }
-    // Fallback to local image
     return `/picture/design ${(index % 15) + 1}.jpeg`;
   };
 
   // Default designs if no data
   const designs = decorations.length > 0 ? decorations : [
-    { name: 'Design 1', price: 35000, imageUrl: '' },
-    { name: 'Design 2', price: 45000, imageUrl: '' },
-    { name: 'Design 3', price: 55000, imageUrl: '' },
-    { name: 'Design 4', price: 40000, imageUrl: '' },
-    { name: 'Design 5', price: 50000, imageUrl: '' },
-    { name: 'Design 6', price: 60000, imageUrl: '' },
-    { name: 'Design 7', price: 42000, imageUrl: '' },
-    { name: 'Design 8', price: 38000, imageUrl: '' },
-    { name: 'Design 9', price: 38000, imageUrl: '' },
-    { name: 'Design 10', price: 38000, imageUrl: '' },
-    { name: 'Design 11', price: 38000, imageUrl: '' },
-    { name: 'Design 12', price: 38000, imageUrl: '' },
-    { name: 'Design 13', price: 38000, imageUrl: '' },
-    { name: 'Design 14', price: 38000, imageUrl: '' },
-    { name: 'Design 15', price: 38000, imageUrl: '' }
+    { name: 'Design 1'},
+    { name: 'Design 2' },
+    { name: 'Design 3'},
+    { name: 'Design 4'},
+    { name: 'Design 5'},
+    { name: 'Design 6'},
+    { name: 'Design 7'},
+    { name: 'Design 8'},
+    { name: 'Design 9'},
+    { name: 'Design 10'},
+    { name: 'Design 11'},
+    { name: 'Design 12'},
+    { name: 'Design 13'},
+    { name: 'Design 14'},
+    { name: 'Design 15'}
   ];
 
   const openModal = (design) => {
@@ -654,6 +700,7 @@ function Pricing() {
                   src={getValidImageUrl(item, index)}
                   alt={item.name || `Design ${index + 1}`}
                   loading="lazy"
+                  decoding="async"
                   onError={(e) => {
                     e.currentTarget.src = `/picture/design ${(index % 15) + 1}.jpeg`;
                   }}
@@ -697,6 +744,7 @@ function Pricing() {
                   src={getValidImageUrl(selectedDesign, designs.indexOf(selectedDesign))}
                   alt={selectedDesign.name}
                   loading="lazy"
+                  decoding="async"
                   onError={(e) => {
                     e.currentTarget.src = `/picture/design ${(designs.indexOf(selectedDesign) % 15) + 1}.jpeg`;
                   }}
@@ -1054,6 +1102,7 @@ function MirrorGallery() {
                     src={item.image}
                     alt={language === 'ar' ? item.name : item.nameEn}
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div className="gallery-info">
@@ -1119,10 +1168,10 @@ function RentalGallery() {
   };
 
   const handleTouchEnd = (e) => {
-    if (!touchStart.current) return;
+    if (!touchStart) return;
     const touch = e.changedTouches[0];
-    const diffX = touch.clientX - touchStart.current.x;
-    const diffY = touch.clientY - touchStart.current.y;
+    const diffX = touch.clientX - touchStart.x;
+    const diffY = touch.clientY - touchStart.y;
 
     if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
       if (diffX > 0) {
@@ -1175,6 +1224,7 @@ function RentalGallery() {
                     src={item.image}
                     alt={language === 'ar' ? item.name : item.nameEn}
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div className="gallery-info">
@@ -1206,7 +1256,47 @@ function RentalGallery() {
 
 // Event Planner Section
 function EventPlanner() {
+  const weekdayNamesAr = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+  const weekdayNamesEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const monthNamesAr = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const monthNamesEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const toISODateLocal = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  const parseISODateLocal = (iso) => {
+    const [y, m, day] = String(iso).split('-').map(Number);
+    return new Date(y, (m || 1) - 1, day || 1, 0, 0, 0, 0);
+  };
+  const getArabicWeekdayOnly = (iso) => {
+    const d = parseISODateLocal(iso);
+    return weekdayNamesAr[d.getDay()];
+  };
+  const formatEventDateArEn = (iso) => {
+    const d = parseISODateLocal(iso);
+    const dayName = language === 'ar' ? weekdayNamesAr[d.getDay()] : weekdayNamesEn[d.getDay()];
+    const monthName = language === 'ar' ? monthNamesAr[d.getMonth()] : monthNamesEn[d.getMonth()];
+    const year = d.getFullYear();
+    const day = d.getDate();
+    return language === 'ar'
+      ? `${dayName}، ${day} ${monthName} ${year}`
+      : `${dayName}, ${day} ${monthName} ${year}`;
+  };
+
+  const getTodayISO = () => toISODateLocal(new Date());
+  const addYearsToISO = (iso, years) => {
+    const d = parseISODateLocal(iso);
+    d.setFullYear(d.getFullYear() + years);
+    return toISODateLocal(d);
+  };
+
+  const todayISO = getTodayISO();
+  const maxISO = addYearsToISO(todayISO, 2);
+
+  const { t, language } = useLanguage();
+
+
   const [step, setStep] = useState(1);
+
 
   const trackEventType = async (eventType) => {
     try {
@@ -1239,7 +1329,8 @@ function EventPlanner() {
     venueType: '',
     venueLocation: '',
     venueNotes: '',
-    eventDay: ''
+    eventDate: '',
+    eventDay: '',
   });
 
   const updateFormData = (field, value) => {
@@ -1335,8 +1426,9 @@ function EventPlanner() {
     if (formData.venueType) {
       message += `نوع المكان: ${getVenueTypeName(formData.venueType)}\n`;
     }
-    if (formData.eventDay) {
-      message += `يوم الحفله: ${formData.eventDay}\n`;
+    if (formData.eventDate) {
+      const formattedDate = formatEventDateArEn(formData.eventDate);
+      message += `يوم الحفله: ${formattedDate}\n`;
     }
     if (formData.venueLocation) {
       message += `موقع المكان: ${formData.venueLocation}\n`;
@@ -1357,14 +1449,13 @@ function EventPlanner() {
       case 2: return true; // guestCount is optional
       case 3: return formData.colors && formData.colors.length >= 1;
       case 4: return formData.budget;
-      case 5: return formData.venueType && formData.eventDay;
+      case 5: return formData.venueType && formData.eventDate;
       case 6: return true; // image is optional
       default: return true;
     }
   };
 
-  const { t, language } = useLanguage();
-
+  // useLanguage is already used above in this component for preview + localization
   const eventTypesList = [
     { id: 'wedding', name: language === 'en' ? 'Wedding' : 'فرح', description: language === 'en' ? 'Full day celebration' : 'احتفال اليوم الكامل' },
     { id: 'engagement', name: language === 'en' ? 'Engagement' : 'خطوبة', description: language === 'en' ? 'Ring exchange ceremony' : 'مراسم تبادل الخواتم' },
@@ -1628,23 +1719,26 @@ function EventPlanner() {
                   </select>
                 </div>
 
-                {/* Event Day */}
+                {/* Event Date */}
                 <div className="form-group">
-                  <label className="form-label">{language === 'en' ? 'Event Day *' : 'يوم الحفله *'}</label>
-                  <select
-                    className="form-select"
-                    value={formData.eventDay}
-                    onChange={(e) => updateFormData('eventDay', e.target.value)}
-                  >
-                    <option value="">{language === 'en' ? 'Select day' : 'اختر اليوم'}</option>
-                    <option value="الجمعه">{language === 'en' ? 'Friday' : 'الجمعه'}</option>
-                    <option value="السبت">{language === 'en' ? 'Saturday' : 'السبت'}</option>
-                    <option value="الاحد">{language === 'en' ? 'Sunday' : 'الاحد'}</option>
-                    <option value="الاثنين">{language === 'en' ? 'Monday' : 'الاثنين'}</option>
-                    <option value="الثلاثاء">{language === 'en' ? 'Tuesday' : 'الثلاثاء'}</option>
-                    <option value="الاربعاء">{language === 'en' ? 'Wednesday' : 'الاربعاء'}</option>
-                    <option value="الخميس">{language === 'en' ? 'Thursday' : 'الخميس'}</option>
-                  </select>
+                  <label className="form-label">{language === 'en' ? 'Event Date *' : 'تاريخ الحفله *'}</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={formData.eventDate}
+                    min={todayISO}
+                    max={maxISO}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const day = val ? getArabicWeekdayOnly(val) : '';
+                      setFormData(prev => ({ ...prev, eventDate: val, eventDay: day }));
+                    }}
+                  />
+                  {formData.eventDate && (
+                    <p style={{ marginTop: '8px', color: '#5B3E2B', fontWeight: 600 }}>
+                      📅 {formatEventDateArEn(formData.eventDate)}
+                    </p>
+                  )}
                 </div>
 
                 {/* Venue Location */}
@@ -1995,11 +2089,11 @@ function BeforeAfter() {
             >
               <div className="ba-images">
                 <div className="ba-before">
-                  <img src={item.before} alt="Before" />
+                  <img src={item.before} alt="Before" loading="lazy" decoding="async" />
                   <span className="ba-label">{language === 'en' ? 'Before' : 'قبل'}</span>
                 </div>
                 <div className="ba-after">
-                  <img src={item.after} alt="After" />
+                  <img src={item.after} alt="After" loading="lazy" decoding="async" />
                   <span className="ba-label">{language === 'en' ? 'After' : 'بعد'}</span>
                 </div>
               </div>
@@ -2043,7 +2137,7 @@ function Instagram() {
               variants={fadeInUp}
               whileHover={{ scale: 1.02 }}
             >
-              <img src={src} alt={`Instagram ${index + 1}`} loading="lazy" />
+              <img src={src} alt={`Instagram ${index + 1}`} loading="lazy" decoding="async" />
               <div className="instagram-overlay">
                 <InstagramLogo weight="fill" />
               </div>
@@ -2149,7 +2243,7 @@ function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-about">
-            <img src="/logo.jpg" alt="Alyaa Events Logo" className="footer-logo" />
+            <img src="/logo.jpg" alt="Alyaa Events Logo" className="footer-logo" loading="lazy" decoding="async" />
             <p>{t('footer.about')}</p>
           </div>
           <div>

@@ -10,6 +10,7 @@ import {
   Spinner
 } from 'phosphor-react';
 import { decorationService, uploadToCloudinary } from '../../firebase/service';
+import { cloudinaryUrl } from '../../utils/cloudinary';
 
 const DecorationPrices = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -261,8 +262,10 @@ const DecorationPrices = () => {
               <div className="decoration-image">
                 {item.imageUrl && isValidImageUrl(item.imageUrl) ? (
                   <img
-                    src={item.imageUrl}
+                    src={cloudinaryUrl(item.imageUrl, { width: 600 })}
                     alt={item.name}
+                    loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                       e.currentTarget.nextSibling?.style?.removeProperty('display');
@@ -312,7 +315,12 @@ const DecorationPrices = () => {
                 <div className="image-upload-area">
                   {(isValidImageUrl(previewUrl) || isValidImageUrl(formData.imageUrl)) ? (
                     <div className="image-preview">
-                      <img src={previewUrl || formData.imageUrl} alt="Preview" onError={(e) => e.currentTarget.style.display = 'none'} />
+                      <img
+                        src={cloudinaryUrl(previewUrl || formData.imageUrl, { width: 400 })}
+                        alt="Preview"
+                        decoding="async"
+                        onError={(e) => e.currentTarget.style.display = 'none'}
+                      />
                       <button
                         type="button"
                         className="remove-image"

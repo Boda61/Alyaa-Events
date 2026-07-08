@@ -9,6 +9,7 @@ import {
   Image
 } from 'phosphor-react';
 import { portfolioService, uploadToCloudinary } from '../../firebase/service';
+import { cloudinaryUrl } from '../../utils/cloudinary';
 
 const Portfolio = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -189,7 +190,12 @@ const Portfolio = () => {
             <div key={item.id} className="portfolio-card">
               <div className="portfolio-images">
                 {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.titleEn} loading="lazy" />
+                  <img
+                    src={cloudinaryUrl(item.imageUrl, { width: 600 })}
+                    alt={item.titleEn}
+                    loading="lazy"
+                    decoding="async"
+                  />
                 ) : (
                   <div className="no-image">
                     <Image size={32} />
@@ -261,7 +267,11 @@ const Portfolio = () => {
                 <div className="image-upload-area">
                   {formData.imageUrl ? (
                     <div className="image-preview">
-                      <img src={formData.imageUrl} alt="Preview" />
+                      <img
+                        src={cloudinaryUrl(formData.imageUrl, { width: 400 })}
+                        alt="Preview"
+                        decoding="async"
+                      />
                       <button type="button" className="remove-image" onClick={removeImage}>
                         <X size={16} />
                       </button>
