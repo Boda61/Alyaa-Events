@@ -55,7 +55,7 @@ const instagramImages = [
 
 const mirrorItemsData = [
   { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا و لوحه ترحيب.jpeg' },
-  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا..جپع' },
+  { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا..jpeg' },
   { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 6.jpeg' },
   { name: '  ', nameEn: '  ', image: '/picture/design 6.jpeg' },
   { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 4.jpeg' },
@@ -1006,65 +1006,148 @@ function RentalPrices() {
   );
 }
 
-// Mirror & Welcome Board Gallery Section
-function MirrorGallery() {
+// Stack Slider (shared by Mirror & Rental sections)
+function StackSlider({ items }) {
   const { language } = useLanguage();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-
-  const mirrorItems = [
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا و لوحه ترحيب.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا..jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 6.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/design 6.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 4.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 8.jpeg' },
-    { name: '  ', nameEn: '   ', image: '/picture/لوحه ترحيب 5.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور باب الشقه.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 9.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 3.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/design 7.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور باب شقه 3.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 7.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/لوحه ترحيب 8.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 3.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور باب الشقه 2.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 10.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 5.jpeg' },
-    { name: '  ', nameEn: '  ', image: '/picture/ديكور مرايا 6.jpeg' },
-  ];
+  const [current, setCurrent] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [touchStart, setTouchStart] = useState(null);
+  const [vw, setVw] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
   useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % mirrorItems.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [isPaused, mirrorItems.length]);
+    const onResize = () => setVw(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
-  const [touchStart, setTouchStart] = useState(null);
+  const len = items.length;
+  const clamp = (i) => (i + len) % len;
+
+  const goNext = () => setCurrent((c) => clamp(c + 1));
+  const goPrev = () => setCurrent((c) => clamp(c - 1));
 
   const handleTouchStart = (e) => {
-    const touch = e.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY });
+    setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
   };
 
   const handleTouchEnd = (e) => {
     if (!touchStart) return;
-    const touch = e.changedTouches[0];
-    const diffX = touch.clientX - touchStart.x;
-    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(touch.clientY - touchStart.y)) {
-      if (diffX > 0) {
-        setCurrentSlide(prev => (prev - 1 + mirrorItems.length) % mirrorItems.length);
-      } else {
-        setCurrentSlide(prev => (prev + 1) % mirrorItems.length);
-      }
+    const diffX = e.changedTouches[0].clientX - touchStart.x;
+    const diffY = e.changedTouches[0].clientY - touchStart.y;
+    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX > 0) goPrev();
+      else goNext();
     }
     setTouchStart(null);
   };
 
-  const nextSlide = () => setCurrentSlide(prev => (prev + 1) % mirrorItems.length);
-  const prevSlide = () => setCurrentSlide(prev => (prev - 1 + mirrorItems.length) % mirrorItems.length);
+  const getOffset = (index) => {
+    let offset = (index - current + len) % len;
+    if (offset > len / 2) offset -= len;
+    return offset;
+  };
+
+  const shift = vw <= 767 ? 30 : vw <= 1023 ? 38 : 46;
+
+  const posStyle = (offset) => {
+    if (offset === 0) return { x: 0, y: 0, scale: 1, opacity: 1, zIndex: 3 };
+    if (offset === -1) return { x: `-${shift}%`, y: '5%', scale: 0.82, opacity: 0.6, zIndex: 2 };
+    if (offset === 1) return { x: `${shift}%`, y: '5%', scale: 0.82, opacity: 0.6, zIndex: 2 };
+    return { x: 0, y: '12%', scale: 0.5, opacity: 0, zIndex: 1 };
+  };
+
+  const handleCardClick = (offset) => {
+    if (offset === 0) {
+      setSelectedImage(items[current]);
+      setLightboxOpen(true);
+    } else if (offset === -1) {
+      goPrev();
+    } else if (offset === 1) {
+      goNext();
+    }
+  };
+
+  const showCaption = (item) =>
+    (item.name && item.name.trim()) || (item.nameEn && item.nameEn.trim());
+
+  return (
+    <>
+      <div
+        className="stack-slider"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {items.map((item, index) => {
+          const offset = getOffset(index);
+          const visible = offset === -1 || offset === 0 || offset === 1;
+          return (
+            <motion.div
+              key={index}
+              className={`stack-card ${offset === 0 ? 'active' : ''}`}
+              initial={false}
+              animate={posStyle(offset)}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              style={{ pointerEvents: visible ? 'auto' : 'none' }}
+              onClick={() => handleCardClick(offset)}
+            >
+              <img
+                src={item.image}
+                alt={language === 'ar' ? item.name : item.nameEn}
+                loading="lazy"
+                decoding="async"
+              />
+              {offset === 0 && showCaption(item) && (
+                <div className="stack-caption">
+                  <h3>{language === 'ar' ? item.name : item.nameEn}</h3>
+                </div>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+
+      <div className="gallery-dots">
+        {items.map((_, index) => (
+          <button
+            key={index}
+            className={`gallery-dot ${index === current ? 'active' : ''}`}
+            onClick={() => setCurrent(index)}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {lightboxOpen && selectedImage && (
+          <motion.div
+            className="lightbox open"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setLightboxOpen(false)}
+          >
+            <button className="lightbox-close" onClick={() => setLightboxOpen(false)}>
+              <X weight="bold" />
+            </button>
+            <img
+              src={selectedImage.image}
+              alt={language === 'ar' ? selectedImage.name : selectedImage.nameEn}
+              decoding="async"
+            />
+            <div className="lightbox-info">
+              <h3>{language === 'ar' ? selectedImage.name : selectedImage.nameEn}</h3>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+// Mirror & Welcome Board Gallery Section
+function MirrorGallery() {
+  const { language } = useLanguage();
 
   return (
     <section id="mirror-gallery" className="section mirror-gallery">
@@ -1080,113 +1163,15 @@ function MirrorGallery() {
           <h2 className="section-title">{language === 'en' ? 'Mirrors & Welcome Boards' : 'المرايا ولوحات الترحيب'}</h2>
         </motion.div>
 
-        <div
-          className="gallery-slider"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <button className="gallery-nav-btn prev" onClick={prevSlide}>
-            ❮
-          </button>
-
-          <div className="gallery-wrapper">
-            {mirrorItems.map((item, index) => (
-              <div
-                key={index}
-                className={`gallery-card ${index === currentSlide ? 'active' : ''}`}
-              >
-                <div className="gallery-image">
-                  <img
-                    src={item.image}
-                    alt={language === 'ar' ? item.name : item.nameEn}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-                <div className="gallery-info">
-                  <h3>{language === 'ar' ? item.name : item.nameEn}</h3>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button className="gallery-nav-btn next" onClick={nextSlide}>
-            ❯
-          </button>
-        </div>
-
-        <div className="gallery-dots">
-          {mirrorItems.map((_, index) => (
-            <button
-              key={index}
-              className={`gallery-dot ${index === currentSlide ? 'active' : ''}`}
-              onClick={() => setCurrentSlide(index)}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
+        <StackSlider items={mirrorItemsData} />
       </div>
     </section>
   );
 }
 
-// Rental Gallery Slider Section
+// Rental Gallery Section
 function RentalGallery() {
   const { language } = useLanguage();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-
-  // Gallery data for chairs & tables
-  const galleryItems = [
-    { name: 'كرسي مدفع ', nameEn: 'Cannon chair', image: '/picture/كراسي مدفع 2.jpeg' },
-    { name: ' كرسي اكليرك (ترابيزه اكليرك)', nameEn: 'Acrylic chair (acrylic table)', image: '/picture/كرسي اكليرك.jpeg' },
-    { name: ' كرسي خشب (ترابيزه خشب)', nameEn: 'Wooden chair (wooden table)', image: '/picture/كرسي خشب.jpeg' },
-    { name: ' كرسي خشب اكس', nameEn: 'Wooden Chair X', image: '/picture/كرسي خشب اكس .jpeg' },
-    { name: 'كرسي خشب', nameEn: 'Wooden Chair', image: '/picture/كرسي خشب 3 .jpeg' },
-    { name: 'ترابيزه زجزاج ', nameEn: 'Zigzag table', image: '/picture/ترابيزه زجزاج.jpeg' },
-    { name: 'كرسي مدفع (ترابيزه بيضاوي)', nameEn: 'Cannon Chair (Oval Table)', image: '/picture/كراسي مدفع 3.jpeg' },
-    { name: 'ورد ع السلم', nameEn: 'Roses on the Staircase', image: '/picture/ديكور السلم.jpeg' },
-    { name: 'ورد ع السلم', nameEn: 'Roses on the Staircase', image: '/picture/ديكور سلم 2.jpeg' },
-    { name: 'ورد ع السلم', nameEn: 'Roses on the Staircase', image: '/picture/ديكور سلم 3.jpeg' },
-  ];
-
-  // Auto play - change slide every 4 seconds
-  useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % galleryItems.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [isPaused, galleryItems.length]);
-
-  // Swipe handlers for mobile
-  const handleTouchStart = (e) => {
-    const touch = e.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY });
-  };
-
-  const handleTouchEnd = (e) => {
-    if (!touchStart) return;
-    const touch = e.changedTouches[0];
-    const diffX = touch.clientX - touchStart.x;
-    const diffY = touch.clientY - touchStart.y;
-
-    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
-      if (diffX > 0) {
-        setCurrentSlide(prev => (prev - 1 + galleryItems.length) % galleryItems.length);
-      } else {
-        setCurrentSlide(prev => (prev + 1) % galleryItems.length);
-      }
-    }
-    setTouchStart(null);
-  };
-
-  const [touchStart, setTouchStart] = useState(null);
-
-  const nextSlide = () => setCurrentSlide(prev => (prev + 1) % galleryItems.length);
-  const prevSlide = () => setCurrentSlide(prev => (prev - 1 + galleryItems.length) % galleryItems.length);
 
   return (
     <section id="rental-gallery" className="section rental-gallery">
@@ -1202,53 +1187,7 @@ function RentalGallery() {
           <h2 className="section-title">{language === 'en' ? 'Mirrors & Chairs Gallery' : 'معرض التربيزات والكراسي'}</h2>
         </motion.div>
 
-        <div
-          className="gallery-slider"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <button className="gallery-nav-btn prev" onClick={prevSlide}>
-            ❮
-          </button>
-
-          <div className="gallery-wrapper">
-            {galleryItems.map((item, index) => (
-              <div
-                key={index}
-                className={`gallery-card ${index === currentSlide ? 'active' : ''}`}
-              >
-                <div className="gallery-image">
-                  <img
-                    src={item.image}
-                    alt={language === 'ar' ? item.name : item.nameEn}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-                <div className="gallery-info">
-                  <h3>{language === 'ar' ? item.name : item.nameEn}</h3>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button className="gallery-nav-btn next" onClick={nextSlide}>
-            ❯
-          </button>
-        </div>
-
-        <div className="gallery-dots">
-          {galleryItems.map((_, index) => (
-            <button
-              key={index}
-              className={`gallery-dot ${index === currentSlide ? 'active' : ''}`}
-              onClick={() => setCurrentSlide(index)}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
+        <StackSlider items={rentalGalleryData} />
       </div>
     </section>
   );
