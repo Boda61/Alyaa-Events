@@ -113,6 +113,31 @@ export const getCollection = async (collectionName, orderField = 'createdAt', or
   }
 };
 
+// Get only published documents from a collection (public-facing queries)
+export const getPublishedCollection = async (collectionName, orderField = 'createdAt', orderDirection = 'desc') => {
+  const cacheKey = `${collectionName}_published_${orderField}_${orderDirection}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const q = query(
+      collection(db, collectionName),
+      where('visible', '==', true),
+      orderBy(orderField, orderDirection)
+    );
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setCache(cacheKey, data);
+    return data;
+  } catch (error) {
+    console.error(`Error getting published ${collectionName}:`, error);
+    throw error;
+  }
+};
+
 // Get a single document
 export const getDocument = async (collectionName, docId) => {
   try {
@@ -194,6 +219,22 @@ export const deleteAllDocuments = async (collectionName) => {
 
 export const subscribeToCollection = (collectionName, callback, orderField = 'createdAt', orderDirection = 'desc') => {
   const q = query(collection(db, collectionName), orderBy(orderField, orderDirection));
+  return onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    callback(data);
+  });
+};
+
+// Real-time subscription for published documents only (public-facing queries)
+export const subscribeToPublishedCollection = (collectionName, callback, orderField = 'createdAt', orderDirection = 'desc') => {
+  const q = query(
+    collection(db, collectionName),
+    where('visible', '==', true),
+    orderBy(orderField, orderDirection)
+  );
   return onSnapshot(q, (snapshot) => {
     const data = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -326,6 +367,8 @@ export const testimonialsService = {
   delete: (id) => deleteDocument('testimonials', id),
   toggleVisibility: (id, visible) => updateDocument('testimonials', id, { visible }),
   subscribe: (callback) => subscribeToCollection('testimonials', callback, 'createdAt'),
+  getAllPublished: () => getPublishedCollection('testimonials', 'createdAt', 'desc'),
+  subscribePublished: (callback) => subscribeToPublishedCollection('testimonials', callback, 'createdAt'),
   getAllWithDefaults: async () => {
     const data = await getCollection('testimonials', 'createdAt', 'desc');
     if (data.length === 0) {

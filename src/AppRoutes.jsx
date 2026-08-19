@@ -23,13 +23,13 @@ const LoadingFallback = () => (
 );
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
 
   if (loading) {
     return <LoadingFallback />;
   }
 
-  if (!user) {
+  if (!user || !isAdmin) {
     return <AdminLogin />;
   }
 

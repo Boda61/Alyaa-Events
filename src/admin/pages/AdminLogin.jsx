@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../ProtectedRoute';
 import { auth } from '../../firebase/config';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
 // Preload admin pages after login
 const preloadAdminPages = () => {
@@ -27,7 +27,12 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      if (userCredential.user?.email !== 'admin@alyaaevents.com') {
+        await signOut(auth);
+        setError('هذا الحساب ليس حساب مسؤول. استخدم إيميل الأدمن');
+        return;
+      }
       // Preload pages for faster navigation
       preloadAdminPages();
       navigate('/admin/dashboard');

@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
 // Protected Route Component
 export const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
 
   if (loading) {
@@ -77,7 +77,7 @@ export const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!user) {
+  if (!user || !isAdmin) {
     navigate('/admin', { replace: true });
     return null;
   }

@@ -1801,8 +1801,8 @@ function Testimonials() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const unsubscribe = testimonialsService.subscribe((data) => {
-      setTestimonials(data.filter(t => t.visible));
+    const unsubscribe = testimonialsService.subscribePublished((data) => {
+      setTestimonials(data);
       setLoading(false);
     });
     return unsubscribe;

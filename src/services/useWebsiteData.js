@@ -43,9 +43,8 @@ export const useTestimonials = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = testimonialsService.subscribe((data) => {
-      // Only show visible testimonials
-      setTestimonials(data.filter(t => t.visible));
+    const unsubscribe = testimonialsService.subscribePublished((data) => {
+      setTestimonials(data);
       setLoading(false);
     });
 
@@ -97,7 +96,7 @@ export const useWebsiteData = () => {
         const [services, portfolio, testimonials, settings] = await Promise.all([
           servicesService.getAll(),
           portfolioService.getAll(),
-          testimonialsService.getAll().then(ts => ts.filter(t => t.visible)),
+          testimonialsService.getAllPublished(),
           settingsService.get()
         ]);
 
