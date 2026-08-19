@@ -1725,6 +1725,12 @@ html[lang="ar"] .hero-title {
   margin-bottom: clamp(34px, 6vw, 56px);
 }
 
+@media (max-width: 767px) {
+  .stack-slider {
+    aspect-ratio: 3 / 4;
+  }
+}
+
 .stack-card {
   position: absolute;
   top: 0;
