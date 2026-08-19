@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { useAuth } from './admin/ProtectedRoute';
 import PageViewTracker from './components/PageViewTracker';
+import CinematicLoader from './components/CinematicLoader/CinematicLoader';
 
 const AdminLogin = lazy(() => import('./admin/pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./admin/pages/AdminDashboard'));
@@ -16,21 +17,9 @@ const App = lazy(() => import('./App'));
 
 const LoadingFallback = () => (
   <div style={{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
     height: '100vh',
-    background: '#FDF6EF'
-  }}>
-    <div style={{
-      width: 40,
-      height: 40,
-      border: '4px solid #F4D9CC',
-      borderTopColor: '#5B3E2B',
-      borderRadius: '50%',
-      animation: 'spin 1s linear infinite'
-    }} />
-  </div>
+    background: 'linear-gradient(160deg, #24150c 0%, #5b3e2b 55%, #24150c 100%)'
+  }} />
 );
 
 const ProtectedRoute = ({ children }) => {
@@ -71,11 +60,7 @@ const AdminRoutes = () => {
         </Route>
         <Route path="/*" element={<App />} />
       </Routes>
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      <CinematicLoader />
     </Suspense>
   );
 };
